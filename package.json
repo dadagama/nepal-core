@@ -1,6 +1,6 @@
 {
   "name": "@al/core",
-  "version": "1.0.206",
+  "version": "2.1.0-beta.2",
   "description": "Node Enterprise Packages for Alert Logic (NEPAL) Core Library",
   "main": "./bundles/al-core-nucleus.es5.js",
   "types": "./types/al-core-nucleus.d.ts",
