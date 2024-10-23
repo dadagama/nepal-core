@@ -52,8 +52,8 @@ export class AlIdentityProviders
      * itself is bootstrapped and the angular router assumes control of the URL.
      */
 
-    public async warmup():Promise<string|undefined> {
-        let currentURL = window?.location?.href ?? '';
+    public async warmup( url?:string ):Promise<string|undefined> {
+        let targetURL = url ?? window?.location?.href ?? '';
         if ( AlIdentityProviders.inAuth0Workflow(window?.location?.href) ) {
             try {
                 AlErrorHandler.log( "IdP Warmup: initializing auth0" );
@@ -68,7 +68,7 @@ export class AlIdentityProviders
             } catch( e ) {
                 AlErrorHandler.log(e, "IdP Warmup: auth0 initialization failed" );
             }
-            return this.maybeRewriteBrokenURL( currentURL );
+            return this.maybeRewriteBrokenURL( targetURL );
         } else {
             await this.getKeycloak();
         }
@@ -167,7 +167,6 @@ export class AlIdentityProviders
      * promise to hang indefinitely.
      */
     protected async innerGetKeyCloak( cloak:Keycloak, timeout:number = 5000 ):Promise<void> {
-        console.error( new Error("Getting keycloak!" ), window.location.href );
         return Promise.race( [ AlStopwatch.promise( timeout ),
                                new Promise<void>( async ( resolve, reject ) => {
                                     let cloakPhase = this.storage.get("cloakInitPhase", 0 );
@@ -256,45 +255,50 @@ export class AlIdentityProviders
         try {
             AlErrorHandler.log( `IdP warmup: evaluating input URL [${inputURL}]` );
             let verifyMfaRouteMatcher = /\?state=(.*)\#\/mfa\/verify(.*)/;
+            let altVerifyMfaRouteMatcher = /\?token=(.*)&state=(.*)\#\/mfa\/verify(.*)/;
             let acceptTosRouteMatcher = /\?state=(.*)\#\/terms-of-service(.*)/;
 
             let node    =   AlLocatorService.getNodeByURI( inputURL );
             let nodeId  =   node?.locTypeId || 'unknown';
 
-            if ( nodeId === AlLocation.AccountsUI ) {
+            if ( nodeId === AlLocation.AccountsUI || nodeId === AlLocation.MagmaUI ) {
                 if ( inputURL.match( verifyMfaRouteMatcher ) ) {
+                    AlErrorHandler.log(`IdP warmup: MFA validation URL detected` );
                     let matches = verifyMfaRouteMatcher.exec( inputURL );
                     let stateValue = matches[1];
                     let qsValue = matches[2];
-                    AlErrorHandler.log(`IdP warmup: MFA validation URL detected` );
-                    return inputURL.replace( verifyMfaRouteMatcher, `#/mfa/verify${qsValue}&state=${stateValue}` );
+                    const delimiter = qsValue.includes("?") ? "&" : "?";
+                    return inputURL.replace( verifyMfaRouteMatcher, `#/mfa/verify${qsValue}${delimiter}state=${stateValue}` );
+                } else if ( inputURL.match( altVerifyMfaRouteMatcher ) ) {
+                    AlErrorHandler.log(`IdP warmup: MFA validation URL detected (alternate)` );
+                    let matches = altVerifyMfaRouteMatcher.exec( inputURL );
+                    let tokenValue = matches[1];
+                    let stateValue = matches[2];
+                    let qsValue = matches[3];
+                    const delimiter = qsValue.includes("?") ? "&" : "?";
+                    return inputURL.replace( altVerifyMfaRouteMatcher, `#/mfa/verify${qsValue}${delimiter}token=${tokenValue}&state=${stateValue}` );
                 } else if ( inputURL.match( acceptTosRouteMatcher ) ) {
+                    AlErrorHandler.log(`IdP warmup: TOS acceptance URL detected` );
                     let matches = acceptTosRouteMatcher.exec( inputURL );
                     let stateValue = matches[1];
                     let qsValue = matches[2];
-                    AlErrorHandler.log(`IdP warmup: TOS acceptance URL detected` );
+                    const delimiter = qsValue.includes("?") ? "&" : "?";
                     return inputURL.replace( acceptTosRouteMatcher, `#/terms-of-service${qsValue}&state=${stateValue}` );
-                }
-                let matches = /^(.*)\/\?state=(.*)(\#\/.*)$/.exec( inputURL );
-                if ( matches ) {
-                    //  This is an Auth0 redirect URL.  It needs to be massaged to be gracefully handled by angular.
-                    let paramToken = matches[3].includes("?") ? "&" : "?";
-                    const rewrittenURL = `${matches[1]}/${matches[3]}${paramToken}state=${matches[2]}`;
-                    return rewrittenURL;
                 }
             } else {
                 let matches = /^(.*)\/\?error=login_required&state=(.*)(\#\/.*)$/.exec( inputURL );
                 if ( matches ) {
                     //  This is an Auth0 redirect URL.  It needs to be massaged to be gracefully handled by angular.
-                    let paramToken = matches[3].includes("?") ? "&" : "?";
-                    const rewrittenURL = `${matches[1]}/${matches[3]}${paramToken}error=login_required&state=${matches[2]}`;
+                    let delimiter = matches[3].includes("?") ? "&" : "?";
+                    const rewrittenURL = `${matches[1]}/${matches[3]}${delimiter}error=login_required&state=${matches[2]}`;
                     AlErrorHandler.log(`IdP warmup: login required URL detected` );
                     return rewrittenURL;
                 }
             }
         } catch( e ) {
             AlErrorHandler.report( "Unexpected error: could not preprocess application URI: " + e.toString() );
+            throw e;
         }
         return undefined;
-    };
+    }
 }
