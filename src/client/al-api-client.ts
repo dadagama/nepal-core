@@ -86,7 +86,6 @@ export class AlApiClient implements AlValidationSchemaProvider
 
   protected static defaultServiceParams: APIRequestParams = {
     service_stack:                  AlLocation.InsightAPI,  //  May also be AlLocation.GlobalAPI, AlLocation.EndpointsAPI, or ALLocation.LegacyUI
-    residency:                      'default',              //  "us" or "emea" or "default"
     version:                        'v1',                   //  Version of the service
     ttl:                            false                   //  Default to no caching
   };
@@ -876,8 +875,10 @@ export class AlApiClient implements AlValidationSchemaProvider
       const accountId           =   requestParams.context_account_id || requestParams.account_id || this.defaultAccountId || "0";
       const serviceEndpointId   =   requestParams.target_endpoint || requestParams.service_name;
       const residencyAware      =   AlApiClient.resolveByResidencyServiceList.includes( serviceEndpointId );
-      const residency           =   residencyAware ? AlLocatorService.getCurrentResidency() : "default";
-      // console.log(`prepare() -> accountId: ${accountId} environment: ${environment} residencyAware: ${residencyAware}`);
+      let residency             =   requestParams.residency ?? "default";
+      if ( residencyAware && residency === 'default' ) {
+          residency = AlLocatorService.getCurrentResidency();
+      }
       let baseURL = getJsonPath<string>( this.endpointCache,
                                          [ environment, accountId, serviceEndpointId, residency ],
                                          null );
@@ -898,7 +899,6 @@ export class AlApiClient implements AlValidationSchemaProvider
       baseURL = getJsonPath<string>( this.endpointCache,
                                          [ environment, accountId, serviceEndpointId, residency ],
                                          null );
-      // console.log(`prepare() -> baseURL: ${baseURL}`);
       if ( baseURL ) {
         return baseURL;
       }
