@@ -871,14 +871,19 @@ export class AlApiClient implements AlValidationSchemaProvider
    */
   protected async prepare( requestParams:APIRequestParams ): Promise<string> {
     let result = await this.endpointsGuard.run<string>( async () => {
-      const environment         =   AlLocatorService.getCurrentEnvironment();
-      const accountId           =   requestParams.context_account_id || requestParams.account_id || this.defaultAccountId || "0";
-      const serviceEndpointId   =   requestParams.target_endpoint || requestParams.service_name;
-      const residencyAware      =   AlApiClient.resolveByResidencyServiceList.includes( serviceEndpointId );
-      let residency             =   requestParams.residency ?? "default";
+      let environment         =   AlLocatorService.getCurrentEnvironment();
+      let accountId           =   requestParams.context_account_id || requestParams.account_id || this.defaultAccountId || "0";
+      let serviceEndpointId   =   requestParams.target_endpoint || requestParams.service_name;
+      let residency           =   requestParams.residency ?? "default";
+      let residencyAware      =   AlApiClient.resolveByResidencyServiceList.includes( serviceEndpointId )
+                                    || ! [ undefined, null, 'default' ].includes( requestParams.residency );      //  specific residency zone forces residency aware lookup
+
       if ( residencyAware && residency === 'default' ) {
           residency = AlLocatorService.getCurrentResidency();
+      } else if ( residency !== 'default' ) {
+          residencyAware = true;
       }
+
       let baseURL = getJsonPath<string>( this.endpointCache,
                                          [ environment, accountId, serviceEndpointId, residency ],
                                          null );
