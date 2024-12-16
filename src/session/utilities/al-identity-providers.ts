@@ -46,6 +46,10 @@ export class AlIdentityProviders
         return true;
     }
 
+    public static usingTokenInjection( url:string ):boolean {
+        return /\?.*aims_token=[a-zA-Z0-9\-+]+/.test( url );
+    }
+
     /**
      * This method initializes IdP clients using a heuristic mechanism differentiating auth0 from keycloak.
      * This allows those clients to initiate and/or respond to redirection based OIDC authentication before the application
@@ -69,7 +73,7 @@ export class AlIdentityProviders
                 AlErrorHandler.log(e, "IdP Warmup: auth0 initialization failed" );
             }
             return this.maybeRewriteBrokenURL( targetURL );
-        } else {
+        } else if ( ! AlIdentityProviders.usingTokenInjection( targetURL ) ) {
             await this.getKeycloak();
         }
     }

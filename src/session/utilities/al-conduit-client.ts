@@ -76,7 +76,6 @@ export class AlConduitClient
         }
         let locationId = AlRuntimeConfiguration.getOption<string>( ConfigOption.NavigationConduitLocation, AlLocation.AccountsUI );
         AlConduitClient.conduitUri = AlLocatorService.resolveURL( locationId, '/conduit.html', { residency, environment } );
-        console.log("Setting conduit frame src to [%s]", AlConduitClient.conduitUri );
         AlErrorHandler.log( `Notice: conduit client is using '${AlConduitClient.conduitUri}' as target` );
         const fragment = AlConduitClient.document.createDocumentFragment();
         const container = AlConduitClient.document.createElement( "div" );

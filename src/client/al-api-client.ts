@@ -96,6 +96,7 @@ export class AlApiClient implements AlValidationSchemaProvider
   public verbose:boolean            =   false;
   public collectRequestLog:boolean  =   false;
   public mockMode:boolean           =   false;              //  If true, requests will be normalized but not actually dispatched.
+  public mockRequests:any[]         =   [];
   public defaultAccountId:string    =   null;        //  If specified, uses *this* account ID to resolve endpoints if no other account ID is explicitly specified
 
   private storage                   =   AlCabinet.local( 'apiclient.cache' );
@@ -1011,6 +1012,7 @@ export class AlApiClient implements AlValidationSchemaProvider
     }
     if ( this.mockMode ) {
         return new Promise( ( resolve, reject ) => {
+            this.mockRequests.push( { resolve, reject, request:config, method: config.method ?? "GET", url: config.url ?? "uncalculated" } );
         } );
     }
     if ( this.beforeRequest ) {
