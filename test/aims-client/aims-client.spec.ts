@@ -6,12 +6,12 @@ import { AlDefaultClient } from "../../src/client";
 import {
     AlLocation,
     AlLocatorService,
-} from "../../src/common/navigation";
+} from "../../src/navigation";
 import {
     AIMSClient,
     AIMSClientInstance,
     AIMSEnrollURI
-} from '../../src/aims-client/index';
+} from '../../src/aims-client';
 
 const accountId = '12345';
 const userId = '4567';

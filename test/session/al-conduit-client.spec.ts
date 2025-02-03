@@ -38,13 +38,14 @@ describe('AlConduitClient', () => {
     } );
 
     beforeEach( () => {
+        AlLocatorService.reset();
         AlLocatorService.setContext( { environment: "production" } );
         conduitClient = new AlConduitClient();
         stopwatchStub = sinon.stub( AlStopwatch, 'once' );
         warnStub = sinon.stub( console, 'warn' );
         errorStub = sinon.stub( console, 'error' );
         originalContext = AlLocatorService.getContext();
-        AlLocatorService.setActingUri( "https://console.search.alertlogic.co.uk" );
+        AlLocatorService.setActingUrl( "https://console.search.alertlogic.co.uk" );
     } );
 
     afterEach( () => {
@@ -75,7 +76,7 @@ describe('AlConduitClient', () => {
         it( "should render the document fragment", () => {
             let d = document.implementation.createHTMLDocument("Fake Document" );
             conduitClient.start( d );
-            expect( AlConduitClient['conduitUri'] ).to.equal( 'https://console.account.alertlogic.com/conduit.html' );        //  AlLocatorService uses production settings by default
+            expect( AlConduitClient['conduitUri'] ).to.equal( 'https://console.alertlogic.com/conduit.html' );        //  AlLocatorService uses production settings by default
 
             expect( AlConduitClient['refCount'] ).to.equal( 1 );
             expect( stopwatchStub.callCount ).to.equal( 1 );
@@ -234,12 +235,12 @@ describe('AlConduitClient', () => {
                     type: "conduit.ready"
                 },
                 source: { blahblah: "my source" },
-                origin: 'https://console.account.alertlogic.com/conduit.html'
+                origin: 'https://console.alertlogic.com/conduit.html'
             };
 
             conduitClient.onConduitReady( event );
 
-            expect( AlConduitClient['conduitOrigin'] ).to.equal( 'https://console.account.alertlogic.com/conduit.html' );       
+            expect( AlConduitClient['conduitOrigin'] ).to.equal( 'https://console.alertlogic.com/conduit.html' );
             expect( AlConduitClient['conduitWindow'] ).to.equal( event.source );
         } );
     } );
@@ -277,7 +278,7 @@ describe('AlConduitClient', () => {
 
     /**
      * This test simulates both sides of a two-party message exchange, and includes validation of the cross-residency behavior of conduit -- specifically, all clients,
-     * regardless of their acting residency zone, must interact with the US console.account domain.  This allows authentication data to be shared across residencies.
+     * regardless of their acting residency zone, must interact with the US console domain.  This allows authentication data to be shared across residencies.
      */
     describe( ".request()", () => {
         it( "should wait for readiness, resolve account app, and post message", (done) => {
@@ -286,7 +287,7 @@ describe('AlConduitClient', () => {
                 source: {
                     postMessage: sinon.stub()
                 },
-                origin: AlLocatorService.resolveURL( AlLocation.AccountsUI, '', { residency: 'US' } ),
+                origin: AlLocatorService.resolveURL( AlLocation.MagmaUI, '', { residency: 'US' } ),
                 data: {
                     type: 'conduit.ready',
                     requestId: 'yohoho'
@@ -304,7 +305,7 @@ describe('AlConduitClient', () => {
                         expect( readyMessage.source.postMessage.callCount ).to.equal( 1 );
                         expect( readyMessage.source.postMessage.args[0][0] ).to.be.an( 'object' );
                         expect( readyMessage.source.postMessage.args[0][1] ).to.be.a( 'string' );
-                        expect( readyMessage.source.postMessage.args[0][1] ).to.equal( "https://console.account.alertlogic.com" );
+                        expect( readyMessage.source.postMessage.args[0][1] ).to.equal( "https://console.alertlogic.com" );
                         expect( response.answer ).to.be.a('string' );
                         expect( response.answer ).to.equal( 'NO' );
                         done();
@@ -339,10 +340,10 @@ describe('AlConduitClient', () => {
 
     xdescribe( ".awaitExternalSession()", () => {
         it("should wait until a established message is received", async () => {
-            AlLocatorService.setActingUri("https://console.clouddefender.alertlogic.com" );     //  implies defender-us-denver location
+            AlLocatorService.setActingUrl("https://console.clouddefender.alertlogic.com" );     //  implies defender-us-denver location
             let promise = conduitClient.awaitExternalSession();                                 //  should check for default location for user denver
             conduitClient.onReceiveMessage( {
-                origin: "https://console.account.alertlogic.com",
+                origin: "https://console.alertlogic.com",
                 source: {},
                 data: {
                     type: "conduit.externalSessionReady",

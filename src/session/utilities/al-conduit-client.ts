@@ -2,7 +2,7 @@ import { AIMSSessionDescriptor } from "../../aims-client/types";
 import {
     AlLocation,
     AlLocatorService,
-} from "../../common/navigation";
+} from "../../navigation";
 import { AlBehaviorPromise } from "../../common/promises";
 import {
     AlStopwatch,
@@ -14,7 +14,7 @@ import {
     AlDatacenterSessionEstablishedEvent,
     AlExternalTrackableEvent,
 } from '../events';
-import { AlRuntimeConfiguration, ConfigOption } from '../../configuration';
+import { AlRuntimeConfiguration } from '../../configuration';
 
 export class AlConduitClient
 {
@@ -33,7 +33,7 @@ export class AlConduitClient
     protected disabled = false;
 
     public start( targetDocument?:Document ) {
-        const embedded = AlRuntimeConfiguration.getOption( ConfigOption.FortraChildApplication, false );
+        const embedded = AlRuntimeConfiguration.options.embeddedFortraApp;
         if ( embedded ) {
             this.disabled = true;
             return;
@@ -48,7 +48,7 @@ export class AlConduitClient
         if ( AlConduitClient.refCount < 1 ) {
             AlConduitClient.document = targetDocument;
             window.addEventListener( "message", this.onReceiveMessage, false );
-            const externalConduitFrameId = AlRuntimeConfiguration.getOption( ConfigOption.ExternalConduitFrame, null );
+            const externalConduitFrameId = AlRuntimeConfiguration.options.externalConduitIFrame;
             if ( typeof( externalConduitFrameId ) === 'string' ) {
                 let frameEl = targetDocument.getElementById( externalConduitFrameId ) as HTMLIFrameElement|undefined;
                 if ( ! frameEl || ! frameEl.contentWindow ) {
@@ -74,7 +74,7 @@ export class AlConduitClient
         if ( environment === 'development' ) {
             environment = 'integration';
         }
-        let locationId = AlRuntimeConfiguration.getOption<string>( ConfigOption.NavigationConduitLocation, AlLocation.AccountsUI );
+        let locationId = AlRuntimeConfiguration.options.conduitLocationId ?? AlLocation.MagmaUI;
         AlConduitClient.conduitUri = AlLocatorService.resolveURL( locationId, '/conduit.html', { residency, environment } );
         AlErrorHandler.log( `Notice: conduit client is using '${AlConduitClient.conduitUri}' as target` );
         const fragment = AlConduitClient.document.createDocumentFragment();

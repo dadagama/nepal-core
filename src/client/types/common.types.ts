@@ -3,7 +3,6 @@ import {
     AxiosResponse,
     Method
 } from 'axios';
-import { AlValidationSchemaProvider } from '../../common/utility/al-validation.types';
 
 /**
  * Describes an execution request with all details or verbose an tracking purposes.
@@ -74,19 +73,6 @@ export interface APIRequestParams extends AxiosRequestConfig {
     noEndpointsResolution?:boolean;   //  If set and truthy, endpoints resolution will *not* be used before the request is issued.
     aimsAuthHeader?:boolean;          //  If `true` AND the user is authenticated, forces the addition of the X-AIMS-Auth-Token header; if `false`, suppresses the header when it would ordinarily be added.
     rawResponse?:boolean;             //  If set and truthy, the entire response object (not just its data payload) will be emitted as the result of a successful request.
-
-    /**
-     *  Should data retrieved from this endpoint be validated?  If provided, the response structure (which must be JSON) will be evaluated using the
-     *  indicated schema (which may contain a # fragment indicating a child template).
-     *  The caller may optionally indicate that only a subset of the document be validated (e.g., basePath: "elements.element" would evaluate only the
-     *  "element" structure inside an "elements" wrapper) or that the indicated element should be treated as an array of objects of the given type.
-     */
-    validation?: {
-        schema: string;
-        providers: AlValidationSchemaProvider|AlValidationSchemaProvider[];
-        basePath?: string;
-        asArray?: boolean;
-    };
 
     /**
      *  Should data fetched from this endpoint be cached?  0 ignores caching, non-zero values are treated as milliseconds to persist retrieved data in local memory.

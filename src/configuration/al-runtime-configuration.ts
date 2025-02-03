@@ -1,4 +1,5 @@
-import { AlLocatorService, AlLocationContext, AlRoute } from '../common/navigation/index';
+import { AlLocatorService, AlRoute } from '../navigation';
+import { AlLocationContext } from '../abstract';
 
 /**
  * Describes a set of paths where specific query parameters should be preserved across navigation events, or removed when
@@ -22,7 +23,7 @@ export interface AlParamPreservationRule {
 }
 
 /**
- * AlRuntimeConfiguration provides a single interface to control different behaviors across Alert Logic's UI surface area.
+ * Provides a single interface to control different behaviors across Alert Logic's UI surface area.
  * Many of these are used by the navigation and generic component libraries.
  *
  *   - ConfigOption.GestaltAuthenticate - if true, indicates that AlSession should authenticate via gestalt's session proxy; otherwise,
@@ -45,9 +46,6 @@ export interface AlParamPreservationRule {
  *   - ConfigOption.NavigationViaConduit - if enabled, AlNavigationService will attempt to retrieve navigation metadata from a conduit request
  *      (which queries console.account for a static asset).  Defaults to 'false.'
  *
- *   - ConfigOption.ExternalConduitFrame - if set, the conduit client will treat the value as the id of an externally created iframe created by the
- *      application host or parent.  Otherwise, the conduit iframe will be created dynamically.
- *
  *   - ConfigOption.NavigationViaGestalt - if enabled, AlNavigationService will attempt to retrieve navigation metadata from gestalt
  *      (via AlExternalContentManagerService).  Defaults to 'true.'
  *
@@ -64,25 +62,18 @@ export interface AlParamPreservationRule {
  *      and no browser context, but the libraries need to be marshalled as though there were.
  */
 
-export enum ConfigOption {
-    GestaltAuthenticate         = "session_via_gestalt",
-    GestaltDomain               = "session_gestalt_domain",
-    ResolveAccountMetadata      = "session_metadata",
-    ConsolidatedAccountResolver = "session_consolidated_resolver",
-    DisableEndpointsResolution  = "client_disable_endpoints",
-    LocalManagedContent         = "xcontent_local",
-    ManagedContentAssetPath     = "xcontent_asset_path",
-    NavigationViaConduit        = "navigation_use_conduit",
-    NavigationConduitLocation   = "navigation_conduit_location",
-    ExternalConduitFrame        = "navigation_external_conduit",
-    NavigationViaGestalt        = "navigation_use_gestalt",
-    NavigationAssetPath         = "navigation_asset_path",
-    NavigationDefaultAuthState  = "navigation_default_authentication",
-    NavigationIntegratedAuth    = "navigation_use_integrated_auth",
-    NavigationDiagnostics       = "navigation_debug",
-    Headless                    = "headless",
-    HeadlessActingURI           = "headless_uri",
-    FortraChildApplication      = "fortra_single_spa"
+export interface AlContextOptions {
+    gestaltLocationId?:string;
+    conduitLocationId?:string;
+    noGestaltAuthentication?:boolean;
+    noConduit?:boolean;
+    noAccountMetadata?:boolean;
+    noEndpointsResolution?:boolean;
+    localManagedContent?:string;
+    headless?:boolean;
+    embeddedFortraApp?:boolean;
+    externalConduitIFrame?:string;
+    defaultAccountId?:string;
 }
 
 /**
@@ -90,27 +81,7 @@ export enum ConfigOption {
  */
 export class AlRuntimeConfiguration {
 
-    protected static defaultOptions:{[optionKey:string]:string|number|boolean|unknown} = {
-        'session_via_gestalt': false,
-        'session_gestalt_domain': 'cd21:magma',
-        'session_metadata': true,
-        'session_consolidated_resolver': false,
-        'disable_endpoints_resolution': false,
-        'xcontent_local': false,
-        'xcontent_asset_path': '/assets/content',
-        'navigation_use_conduit': false,
-        'navigation_external_conduit': null,
-        'navigation_use_gestalt': true,
-        'navigation_asset_path': 'assets/navigation',
-        'navigation_default_authentication': null,
-        'navigation_debug': false,
-        'headless': false,
-        'headless_uri': '',
-        'strict_collision_handling': true,
-        'fortra_child_application': false,
-    };
-
-    protected static options:{[optionKey:string]:string|number|boolean|unknown} = Object.assign( {}, AlRuntimeConfiguration.defaultOptions );
+    public static options:AlContextOptions = {};
     protected static paramPreservationZones:{[zoneKey:string]:AlParamPreservationRule} = {};
 
     public static setContext( environment:string, residency:"US"|"EMEA" = "US", locationId?:string ) {
@@ -122,24 +93,8 @@ export class AlRuntimeConfiguration {
         AlRoute.reCache = {};
     }
 
-    public static setOption<ValueType=any>( option:ConfigOption, value:ValueType ) {
-        AlRuntimeConfiguration.options[option] = value;
-        AlRoute.debug = AlRuntimeConfiguration.getOption( ConfigOption.NavigationDiagnostics, false );
-    }
-
-    public static getOption<ValueType=any>( option:ConfigOption, defaultValue?:ValueType ):ValueType|undefined {
-        if ( ( option as string ) in AlRuntimeConfiguration.options ) {
-            return AlRuntimeConfiguration.options[option] as ValueType;
-        }
-        return defaultValue;
-    }
-
-    public static getOptions() {
-        return AlRuntimeConfiguration.options;
-    }
-
     public static reset() {
-        AlRuntimeConfiguration.options = Object.assign( {}, AlRuntimeConfiguration.defaultOptions );
+        AlRuntimeConfiguration.options = {};
         AlRoute.reCache = {};
     }
 
@@ -149,23 +104,13 @@ export class AlRuntimeConfiguration {
     }
 
     /**
-     * Enables headless mode, optionally assuming a specific "acting" uri
-     */
-    public static useHeadlessMode( actingUri:string = 'https://console.account.alertlogic.com' ) {
-        AlRuntimeConfiguration.setOption( ConfigOption.Headless, true );
-        AlRuntimeConfiguration.setOption( ConfigOption.HeadlessActingURI, actingUri );
-    }
-
-    /**
      *  To run an application with local static content, run ui-static-content's build script, copy the entire `dist` folder into your application's
      *  src/assets/external, and then invoke this function.  The path can be overridden, of course!
      */
     public static useLocalContent( assetBasePath:string = 'assets/external' ) {
-        AlRuntimeConfiguration.setOption( ConfigOption.LocalManagedContent, true );
-        AlRuntimeConfiguration.setOption( ConfigOption.NavigationViaGestalt, false );
-        AlRuntimeConfiguration.setOption( ConfigOption.NavigationViaConduit, false );
-        AlRuntimeConfiguration.setOption( ConfigOption.ManagedContentAssetPath, assetBasePath );
-        AlRuntimeConfiguration.setOption( ConfigOption.NavigationAssetPath, `${assetBasePath}/navigation` );
+        AlRuntimeConfiguration.options.localManagedContent = assetBasePath;
+        AlRuntimeConfiguration.options.noGestaltAuthentication = true;
+        AlRuntimeConfiguration.options.noConduit = true;
     }
 
     /**

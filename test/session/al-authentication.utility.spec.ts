@@ -6,7 +6,6 @@ import {
     AlDefaultClient,
     AlAuthenticationUtility, AlAuthenticationResult,
     AlSession,
-    ConfigOption,
     AlRuntimeConfiguration
 } from '@al/core';
 import { AxiosResponse } from 'axios';
@@ -16,8 +15,8 @@ describe('AlAuthenticationUtility', () => {
     let authenticator:AlAuthenticationUtility;
 
     beforeEach( () => {
-        AlRuntimeConfiguration.setOption( ConfigOption.GestaltAuthenticate, true );
-        AlRuntimeConfiguration.setOption( ConfigOption.ResolveAccountMetadata, false );
+        AlRuntimeConfiguration.options.noGestaltAuthentication = false;
+        AlRuntimeConfiguration.options.noAccountMetadata = true;
         AlRuntimeConfiguration.setContext( "production" );
         sinon.stub( AlSession, "ready" ).returns( Promise.resolve() );
     } );
@@ -101,7 +100,6 @@ describe('AlAuthenticationUtility', () => {
                 config: null
             } ) );
             let result = await authenticator.authenticate( "something", "password" );
-            console.log("Configuration...", AlRuntimeConfiguration.getOptions() );
             expect( result ).to.equal( AlAuthenticationResult.TOSAcceptanceRequired );
             expect( authenticator.getSessionToken() ).to.equal( "UglyToken" );
             expect( authenticator.getTermsOfServiceURL() ).to.equal( "https://lmgtfy.app/?q=Not+Implemented" );

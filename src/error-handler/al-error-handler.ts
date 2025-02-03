@@ -1,6 +1,7 @@
 import { AxiosResponse } from 'axios';
 import { AlBaseError, AlAPIServerError, AlWrappedError, AlCabinet } from '../common';
 import { AlDefaultClient, APIRequestParams } from '../client';
+import { AlGlobalizer } from '../common';
 
 export interface AlErrorDescriptor {
     title:string;
@@ -16,9 +17,10 @@ export interface AlErrorDescriptor {
 export class AlErrorHandler
 {
     public static initialized = false;
-    public static categories:{[categoryId:string]:boolean} = {};
+    public static categories:string[] = [];
     public static upstream?:{(error:AlBaseError):void};
     public static verbose = false;
+    protected static storage:AlCabinet;
 
     /**
      *  Logs a normalized error message to the console.
@@ -32,7 +34,7 @@ export class AlErrorHandler
         AlErrorHandler.prepare();
         const normalized = AlErrorHandler.normalize( error );
         const effectiveCategoryId = categoryId ?? 'general';
-        if ( overrideVerbosity || AlErrorHandler.verbose || ( effectiveCategoryId in AlErrorHandler.categories ) ) {
+        if ( overrideVerbosity || AlErrorHandler.verbose || AlErrorHandler.categories.includes( effectiveCategoryId ) ) {
             console.log( commentary ? `${commentary}: ${normalized.message}` : normalized.message );
         }
     }
@@ -93,8 +95,13 @@ export class AlErrorHandler
      */
     public static enable( ...categories:string[] ) {
         const storage = AlErrorHandler.prepare();
-        categories.forEach( ( categoryId ) => AlErrorHandler.categories[categoryId] = true );
-        storage.set( "visible", AlErrorHandler.categories );
+        categories.forEach( ( categoryId ) => {
+            if ( categoryId === '*' ) {
+                AlErrorHandler.verbose = true;
+            }
+            AlErrorHandler.categories.push( categoryId );
+        } );
+        storage.set( "visible", AlErrorHandler.categories ).synchronize();
     }
 
     /**
@@ -102,8 +109,16 @@ export class AlErrorHandler
      */
     public static disable( ...categories:string[] ) {
         const storage = AlErrorHandler.prepare();
-        categories.forEach( ( categoryId ) => delete AlErrorHandler.categories[categoryId] );
-        storage.set( "visible", AlErrorHandler.categories );
+        categories.forEach( ( categoryId ) => {
+            if ( categoryId === '*' ) {
+                AlErrorHandler.categories = [];
+                AlErrorHandler.verbose = false;
+            } else {
+                AlErrorHandler.categories = AlErrorHandler.categories.filter( c => c !== categoryId );
+            }
+        } );
+
+        storage.set( "visible", AlErrorHandler.categories ).synchronize();
     }
 
     public static wrap( error:AxiosResponse|AlBaseError|Error|string|any, message:string ):AlWrappedError {
@@ -165,12 +180,20 @@ export class AlErrorHandler
 
     protected static prepare():AlCabinet {
         if ( ! AlErrorHandler.initialized ) {
-            const storage = AlCabinet.persistent("errors");
-            AlErrorHandler.categories = storage.get( "visible", {} );
+            AlErrorHandler.storage = AlCabinet.persistent("errors");
+            AlErrorHandler.categories = AlErrorHandler.storage.get( "visible", {} );
+            if ( ! Array.isArray( AlErrorHandler.categories ) ) {
+                AlErrorHandler.categories = [];
+            }
+            if ( AlErrorHandler.categories.includes("*") ) {
+                AlErrorHandler.verbose = true;
+            }
+            if ( AlErrorHandler.categories.length > 0 ) {
+                console.log(`Notice: logging enabled for categories [${AlErrorHandler.categories.join(", ")}]` );
+            }
             AlErrorHandler.initialized = true;
-            return storage;
         }
-
+        return AlErrorHandler.storage;
     }
 
     protected static getErrorDescription( error:any, verbose = true ):string {
@@ -355,3 +378,8 @@ export class AlErrorHandler
         }
     }
 }
+
+AlGlobalizer.expose( 'al.error', {
+    enable: ( ...categories:string[] ) => AlErrorHandler.enable( ...categories ),
+    disable: ( ...categories:string[] ) => AlErrorHandler.disable( ...categories ),
+} );

@@ -7,11 +7,10 @@ import {
     AlDefaultClient,
     APIRequestParams,
 } from "../client";
-import { AlValidationSchemaProvider } from '../common/utility';
 import {
     AlLocation,
     AlLocatorService,
-} from "../common/navigation";
+} from "../navigation";
 import {
     AIMSAccessKey,
     AIMSAccount,
@@ -26,9 +25,8 @@ import {
     AIMSLicenseAcceptanceStatus,
     AIMSMappedAccount,
 } from './types';
-import { aimsTypeSchematics } from './aims.schematics';
 
-export class AIMSClientInstance implements AlValidationSchemaProvider {
+export class AIMSClientInstance {
 
   private client:AlApiClient;
   private serviceName = 'aims';
@@ -404,6 +402,9 @@ export class AIMSClientInstance implements AlValidationSchemaProvider {
     };
     if ( useAuthenticationHeader ) {
       request.headers['Authorization'] = `Bearer ${accessToken}`;
+      if ( AlLocatorService.getCurrentEnvironment() === 'embedded-development' ) {
+        request.headers['X-Fortra-Environment'] = "dev";
+      }
     } else {
       request.headers['X-AIMS-Auth-Token'] = accessToken;
     }
@@ -971,18 +972,6 @@ export class AIMSClientInstance implements AlValidationSchemaProvider {
     return (await Promise.all(
       accountList.map(account => this.getUsers(account, { include_role_ids: false, include_user_credential: false }))
     )).flat();
-  }
-
-  public hasSchema( schemaId:string ) {
-    return schemaId in aimsTypeSchematics;
-  }
-
-  public async getSchema( schemaId:string ) {
-    return aimsTypeSchematics[schemaId];
-  }
-
-  public getProviders() {
-    return [ AlDefaultClient ];
   }
 
 }

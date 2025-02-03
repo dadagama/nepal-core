@@ -8,22 +8,7 @@
  *  Copyright 2019 Alert Logic, Inc.
  */
 
-/**
- * @public
- *
- * AlLocationContext defines the context in which a specific location or set of locations may exist.
- *     - environment - development, integration, production?
- *     - residency - US or EMEA (or default)?
- *     - insightLocationId - insight-us-virginia, insight-eu-ireland, defender-us-ashburn, defender-us-denver, defender-uk-newport
- *     - accessible - a list of accessible insight location IDs
- */
-export interface AlLocationContext {
-    environment?:string;
-    residency?:string;
-    insightLocationId?:string;
-    path?:string;
-    accessible?:string[];
-}
+import { AlLocationContext, AlLocationDescriptor } from '../abstract';
 
 /**
  * @public
@@ -79,12 +64,10 @@ export class AlLocation
     /**
      * 1Console UI Nodes
      */
-    public static StandaloneMagmaUI = "cd24:1console";
-    public static SingleSpaMagmaUI  = "cd24:foundation";
     public static MagmaUI           = "cd21:magma";
     public static FortraPlatform    = "fortra:platform";
     public static FrontlineVM       = "frontline:vm";
-    public static StaticContentUI   = "ui-static-content";
+    public static StaticContentUI   = "static-content";
 
     /**
      * Miscellaneous/External Resources
@@ -101,87 +84,83 @@ export class AlLocation
     /**
      * Generates location type definitions for residency-specific prod, integration, and dev versions of a UI
      */
-    public static uiNode( locTypeId:string, appCode:string, devPort:number, magmaRedirectPath?: string ):AlLocationDescriptor[] {
-        let nodes:AlLocationDescriptor[] = [];
-
-        if ( [ AlLocation.MagmaUI, AlLocation.StandaloneMagmaUI, AlLocation.SingleSpaMagmaUI ].includes( locTypeId ) ) {
-            nodes.push( {
+    public static magmaNode( locTypeId:string, appCode:string, devPort:number ):AlLocationDescriptor[] {
+        return [
+            {
                 locTypeId: locTypeId,
                 environment: 'production',
                 residency: 'US',
                 uri: `https://console.alertlogic.com`,
-                keyword: `${locTypeId===AlLocation.MagmaUI ? 'console.alertlogic.com': appCode}`
-            } );
-        } else {
-            nodes.push( {
+            },
+            {
                 locTypeId: locTypeId,
-                environment: 'production',
+                environment: 'production-staging',
                 residency: 'US',
-                uri: `https://console.${appCode}.alertlogic.com`,
-                aliases: [ `https://console.${appCode}.alertlogic.co.uk` ],
-                keyword: `${locTypeId===AlLocation.MagmaUI ? 'console.alertlogic.com': appCode}`
-            } );
-        }
-
-        nodes.push( {
-            locTypeId: locTypeId,
-            environment: 'production-staging',
-            residency: 'US',
-            uri: `https://${appCode}-production-staging-us.ui-dev.product.dev.alertlogic.com`,
-            aliases: [ `https://${appCode}-production-staging-uk.ui-dev.product.dev.alertlogic.com` ],
-            keyword: appCode
-        } );
-
-        nodes.push( {
+                uri: `https://${appCode}-production-staging-us.ui-dev.product.dev.alertlogic.com`,
+                aliases: [ `https://${appCode}-production-staging-uk.ui-dev.product.dev.alertlogic.com` ],
+            },
+            {
                 locTypeId: locTypeId,
                 environment: 'integration',
                 uri: `https://console.${appCode}.product.dev.alertlogic.com`,
                 aliases: [
                     `https://${appCode}.ui-dev.product.dev.alertlogic.com`,
                     `https://${appCode}-*.ui-dev.product.dev.alertlogic.com`,
-                    `https://${appCode}-pr-*.ui-dev.product.dev.alertlogic.com`,
-                    `https://*.o3-${appCode}.product.dev.alertlogic.com`
+                    `https://${appCode}-pr-*.ui-dev.product.dev.alertlogic.com`
                 ],
-                keyword: appCode
             },
             {
                 locTypeId: locTypeId,
                 environment: 'development',
                 uri: `http://localhost:${devPort}`,
-                keyword: 'localhost'
+            },
+            {
+                locTypeId: locTypeId,
+                environment: 'embedded-development',
+                uri: `https://foundation.foundation-dev.cloudops.fortradev.com/*/`,
+            },
+            {
+                locTypeId: locTypeId,
+                environment: 'embedded-integration',
+                uri: `https://foundation.foundation-stage.cloudops.fortradev.com/*/`,
             }
-        );
-
-        if ( magmaRedirectPath ) {
-            nodes.forEach( node => node.magmaRedirectPath = magmaRedirectPath );
-        }
-        return nodes;
+        ];
     }
-}
 
-/**
- * @public
- *
- * Describes a single instance of a location type (AlLocation).
- */
+    /**
+     * Generates location type definitions for residency-specific prod, integration, and dev versions of a UI
+     */
+    public static o3Node( locTypeId:string, appCode:string, devPort:number ):AlLocationDescriptor[] {
+        let nodes:AlLocationDescriptor[] = [];
 
-export interface AlLocationDescriptor
-{
-    locTypeId:string;               //  This should correspond to one of the ALLocation string constants, e.g., AlLocation.AccountsUI or AlLocation.GlobalAPI.
-    insightLocationId?:string;      //  The location ID as defined by the global locations service -- e.g., 'defender-us-ashburn' or 'insight-eu-ireland'.
-    uri:string;                     //  URI of the entity
-    originalUri?:string;            //  for after remapping, needed for linking
-    residency?:string;              //  A data residency domain
-    environment?:string;            //  'production, 'integration', 'development'...
-    aliases?:string[];              //  A list of
-    inert?:boolean;                 //  Not evaluated by `AlLocatorMatrix.setActingUri`
-
-    uiCaption?:string;
-    uiEntryPoint?:{locTypeId:string, path?:string};
-    data?:any;                      //  Miscellaneous associated data
-    weight?:number;                 //  Relative weight for resolution by URI.  In general, the more significant a node is the lower its weight should be.
-    magmaRedirectPath?: string;
-    keyword?:string;
+        return [
+            {
+                locTypeId: locTypeId,
+                environment: 'production',
+                residency: 'US',
+                uri: `https://console.${appCode}.alertlogic.com`,
+                aliases: [ `https://console.${appCode}.alertlogic.co.uk` ],
+            },
+            {
+                locTypeId: locTypeId,
+                environment: 'production-staging',
+                residency: 'US',
+                uri: `https://${appCode}-production-staging-us.ui-dev.product.dev.alertlogic.com`,
+                aliases: [ `https://${appCode}-production-staging-uk.ui-dev.product.dev.alertlogic.com` ],
+            },
+            {
+                locTypeId: locTypeId,
+                environment: 'integration',
+                uri: `https://console.${appCode}.product.dev.alertlogic.com`,
+                aliases: [],
+            },
+            {
+                locTypeId: locTypeId,
+                environment: 'development',
+                uri: `http://localhost:${devPort}`,
+            }
+        ];
+    }
 }
 
 /**

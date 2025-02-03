@@ -21,19 +21,17 @@ import {
     AlClientBeforeRequestEvent,
     AlDefaultClient,
 } from "../client";
-import { AlDataValidationError } from "../common/errors";
 import { AlErrorHandler } from '../error-handler';
 import {
     AlInsightLocations,
     AlLocation,
     AlLocatorService
-} from "../common/navigation";
+} from "../navigation";
 import { AlBehaviorPromise } from "../common/promises";
-import { AlRuntimeConfiguration, ConfigOption } from '../configuration';
+import { AlRuntimeConfiguration } from '../configuration';
 import {
     AlCabinet,
     AlGlobalizer,
-    AlJsonValidator,
     AlTriggerStream,
     deepMerge
 } from "../common/utility";
@@ -206,18 +204,7 @@ export class AlSessionInstance
      */
     public async setAuthentication( proposal: AIMSSessionDescriptor ):Promise<AlActingAccountResolvedEvent> {
       try {
-        /*
-        if ( AlRuntimeConfiguration.getOption<boolean>( ConfigOption.FortraChildApplication, false ) ) {
-            this.storage = AlCabinet.local( "al_session" );     //  Don't use persistent storage when authenticated in a Fortra embedded application
-        }
-        */
         this.startDetection();
-        let authenticationSchemaId = "https://alertlogic.com/schematics/aims#definitions/authentication";
-        let validator = new AlJsonValidator( AIMSClient );
-        let test = await validator.test( proposal.authentication, authenticationSchemaId );
-        if ( ! test.valid ) {
-          throw new AlDataValidationError( `The provided data is not a valid session descriptor.`, proposal, authenticationSchemaId, [ test.error ] );
-        }
 
         if ( proposal.authentication.token_expiration <= this.getCurrentTimestamp()) {
           throw new Error( "AIMS authentication response contains unexpected expiration timestamp in the past" );
@@ -282,7 +269,7 @@ export class AlSessionInstance
 
       AlDefaultClient.defaultAccountId    = account.id;
 
-      let resolveMetadata                 = AlRuntimeConfiguration.getOption<boolean>( ConfigOption.ResolveAccountMetadata, true );
+      let resolveMetadata                 = ! AlRuntimeConfiguration.options.noAccountMetadata;
 
       if ( ! resolveMetadata ) {
         //  If metadata resolution is disabled, still trigger changed/resolved events with basic data
@@ -714,6 +701,7 @@ export class AlSessionInstance
 
     protected onBeforeRequest = ( event:AlClientBeforeRequestEvent ) => {
       /*  tslint:disable:no-boolean-literal-compare */
+      const environment = AlLocatorService.getCurrentEnvironment();
       if ( this.sessionIsActive ) {
         if ( event.request.aimsAuthHeader === true
                 ||
@@ -722,6 +710,9 @@ export class AlSessionInstance
           if ( ! ( 'X-AIMS-Auth-Token' in event.request.headers ) && ! ( 'Authorization' in event.request.headers ) ) {
             if ( this.sessionData?.fortraSession ) {
               event.request.headers['Authorization'] = `Bearer ${this.sessionData.fortraSession.accessToken}`;
+              if ( environment === 'embedded-development' ) {
+                  event.request.headers['X-Fortra-Environment'] = "dev";
+              }
             } else {
               event.request.headers['X-AIMS-Auth-Token'] = this.getToken();
             }

@@ -5,7 +5,7 @@
  *  Copyright 2017 Alert Logic Inc.
  */
 
-import { AlLocatorService } from './al-locator.service';
+import { AlLocatorService } from './locator.service';
 
 /**
  * @public

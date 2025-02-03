@@ -70,49 +70,10 @@ describe( 'AlTriggerStream', () => {
         subscription2.cancel();
     } );
 
-    it("should collate and return responses systematically", () => {
-        const stream = new AlTriggerStream();
-
-        const subscription = stream.attach( EventType1, ( event ) => {
-            event.respond( true );
-        } );
-
-        const subscription2 = stream.attach( EventType1, ( event ) => {
-            event.respond( "Kevin" );
-        } );
-
-        let event = new EventType1();
-        stream.trigger( event );
-
-        //  Test anyResponseEquals
-        expect( event.responses.length ).to.equal( 2 );
-        expect( event.anyResponseEquals( true ) ).to.equal( true );
-        expect( event.anyResponseEquals( "Kevin" ) ).to.equal( true );
-        expect( event.anyResponseEquals( null ) ).to.equal( false );
-        expect( event.anyResponseEquals( "kevin" ) ).to.equal( false );
-
-        //  Test anyResponseWith
-        expect( event.anyResponseWith( value => typeof( value ) === 'string' ) ).to.equal( true );
-        expect( event.anyResponseWith( value => typeof( value ) === 'object' ) ).to.equal( false );
-
-        //  Test response()
-        const response1 = event.response();
-        const response2 = event.response();
-        const response3 = event.response();
-
-        expect( response1 ).to.equal( true );
-        expect( response2 ).to.equal( "Kevin" );
-        expect( response3 ).to.equal( undefined );
-
-        subscription.cancel();
-        subscription2.cancel();
-    } );
-
     it("should respect pause, resume, and filter on subscriptions", () => {
         const stream = new AlTriggerStream();
 
         const subscription = stream.attach( EventType1, ( event ) => {
-            event.respond( true );
             handlerCallCount++;
         } );
 

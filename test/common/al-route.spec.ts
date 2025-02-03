@@ -55,8 +55,9 @@ describe( 'AlRoute', () => {
     let routingHost = new MockRoutingHost( fakeEntitlements );
 
     beforeEach( () => {
+        AlLocatorService.reset();
         AlLocatorService.setContext( { environment: "production", residency: 'US', insightLocationId: 'defender-us-denver' } );
-        AlLocatorService.setActingUri("https://console.alertlogic.com" );
+        AlLocatorService.setActingUrl("https://console.alertlogic.com" );
         routingHost.routeParameters["accountId"] = "2";
         routingHost.routeParameters["deploymentId"] = "1234ABCD-1234-ABCD1234";
     } );
@@ -518,7 +519,7 @@ describe( 'AlRoute', () => {
         } );
 
         it("should evaluate environment conditionals as expected", () => {
-            AlLocatorService.setActingUri( "https://console.account.alertlogic.com" );
+            AlLocatorService.setActingUrl( "https://console.account.alertlogic.com" );
             let route = new AlRoute( routingHost, {
                 caption: "Something",
                 visible: {
@@ -527,7 +528,7 @@ describe( 'AlRoute', () => {
             } );
             expect( route.visible ).to.equal( false );
 
-            AlLocatorService.setActingUri( "https://console.account.product.dev.alertlogic.com" );
+            AlLocatorService.setActingUrl( "https://console.account.product.dev.alertlogic.com" );
             route.refresh();
             expect( route.visible ).to.equal( true );
         } );

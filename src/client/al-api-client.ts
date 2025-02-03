@@ -29,18 +29,12 @@ import axios, {
 } from 'axios';
 import * as base64JS from 'base64-js';
 import { AlDataValidationError, AlGatewayTimeoutError } from '../common/errors';
-import {
-    AlLocation,
-    AlLocationContext,
-    AlLocationDescriptor,
-    AlLocatorService,
-} from "../common/navigation";
+import { AlLocationContext, AlLocationDescriptor } from '../abstract';
+import { AlLocation, AlLocatorService } from "../navigation";
 import {
     AlCabinet,
     AlGlobalizer,
-    AlJsonValidator,
     AlMutex,
-    AlValidationSchemaProvider,
     AlStopwatch,
     AlTriggerStream,
     deepMerge,
@@ -56,7 +50,7 @@ import {
 } from './types';
 import { AlClientBeforeRequestEvent, AlClientAPIErrorEvent } from './events';
 import { AIMSSessionDescriptor } from '../aims-client/types';
-import { AlRuntimeConfiguration, ConfigOption } from '../configuration';
+import { AlRuntimeConfiguration } from '../configuration';
 import { commonTypeSchematics } from './common.schematics';
 
 /**
@@ -73,7 +67,7 @@ type AlEndpointsDictionary = {
   }
 };
 
-export class AlApiClient implements AlValidationSchemaProvider
+export class AlApiClient
 {
   /**
    * The following list of services are the ones whose endpoints will be resolved by default.  Added globally/commonly used services here for optimized API performance.
@@ -698,20 +692,6 @@ export class AlApiClient implements AlValidationSchemaProvider
   }
 
   /**
-   * Implements AlValidationSchemaProvider `hasSchema()`
-   */
-  public hasSchema( schemaId:string ) {
-    return schemaId in commonTypeSchematics;
-  }
-
-  /**
-   * Implements AlValidationSchemaProvider `getSchema()`
-   */
-  public getSchema( schemaId:string ) {
-    return commonTypeSchematics[schemaId];
-  }
-
-  /**
    * Resolves accumulated endpoints data for the given account.
    *
    * Update Feb 2021
@@ -818,7 +798,7 @@ export class AlApiClient implements AlValidationSchemaProvider
       if ( environment === 'development' ) {
           environment = 'integration';
       }
-      let authLocationId = AlRuntimeConfiguration.getOption( ConfigOption.GestaltDomain, AlLocation.AccountsUI );
+      let authLocationId = AlRuntimeConfiguration.options.gestaltLocationId ?? AlLocation.MagmaUI;
       return AlLocatorService.resolveURL( authLocationId, `/session/v1/authenticate`, { residency, environment } );
   }
 
@@ -826,7 +806,7 @@ export class AlApiClient implements AlValidationSchemaProvider
   protected async calculateRequestURL( params: APIRequestParams ):Promise<string> {
     let fullPath:string = null;
     if ( ! params.noEndpointsResolution
-           && ! AlRuntimeConfiguration.getOption<boolean>( ConfigOption.DisableEndpointsResolution, false )
+           && ! AlRuntimeConfiguration.options.noEndpointsResolution
            && ( params.target_endpoint || ( params.service_name && this.endpointsStackWhitelist.includes( params.service_stack ) ) ) ) {
       // Utilize the endpoints service to determine which location to use for this service/account pair
       fullPath = await this.prepare( params );
@@ -1022,9 +1002,6 @@ export class AlApiClient implements AlValidationSchemaProvider
                                 if ( attemptIndex > 0 ) {
                                   console.warn(`Notice: resolved request for ${config.url} with retry logic.` );
                                 }
-                                if ( config.validation ) {
-                                    return this.validateResponse( response, config );
-                                }
                                 return response;
                               },
                               error => {
@@ -1061,27 +1038,6 @@ export class AlApiClient implements AlValidationSchemaProvider
                           }
                           return Promise.reject( exception );
                         } );
-  }
-
-  /**
-   * This method constructs a validator with the appropriate providers and uses it to validate a response structure.  It will return the given response as-is
-   * if the validation succeeds, or throw an AlDataValidationError if the validation fails.
-   */
-  protected async validateResponse<ResponseType = any>( response:AxiosResponse<ResponseType>, config:APIRequestParams ):Promise<AxiosResponse<ResponseType>> {
-    let providers = Array.isArray( config.validation.providers ) ? config.validation.providers : [ config.validation.providers ];
-    let validator = new AlJsonValidator( ...providers );
-    let targetData = response.data;
-    if ( config.validation.basePath ) {
-      targetData = getJsonPath( targetData, config.validation.basePath, null );
-      if ( targetData === null ) {
-        throw new AlDataValidationError( `Received an API response that does not contain an expected element at path '${config.validation.basePath}'`, targetData, config.validation.schema );
-      }
-    }
-    let result = await validator.test( targetData, config.validation.schema );
-    if ( ! result.valid ) {
-      throw new AlDataValidationError( `Received an API response with an unexpected structure.`, response.data, config.validation.schema, [ result.error ], response.config );
-    }
-    return response;
   }
 
   /**

@@ -10,7 +10,6 @@ import {
     AlLocatorService,
     AIMSClient,
     AlSession,
-    ConfigOption,
     AlRuntimeConfiguration
 } from '@al/core';
 
@@ -20,8 +19,8 @@ describe('AlSessionDetector', () => {
     let warnStub, errorStub, getTokenInfoStub;
 
     beforeEach( () => {
-        AlRuntimeConfiguration.setOption( ConfigOption.DisableEndpointsResolution, true );
-        AlRuntimeConfiguration.setOption( ConfigOption.ResolveAccountMetadata, false );
+        AlRuntimeConfiguration.options.noEndpointsResolution = true;
+        AlRuntimeConfiguration.options.noAccountMetadata = true;
         AlLocatorService.setContext( { environment: "production" } );
         conduit = new AlConduitClient();
         sessionDetector = new AlSessionDetector( conduit, true );
@@ -209,7 +208,7 @@ describe('AlSessionDetector', () => {
 
         describe("with a gestalt session", () => {
             it( "should resolve true", async () => {
-                AlRuntimeConfiguration.setOption( ConfigOption.GestaltAuthenticate, true );
+                AlRuntimeConfiguration.options.noGestaltAuthentication = false;
                 AlSession.deactivateSession();
                 sinon.stub( conduit, 'getSession' ).returns( Promise.resolve( null ) );
                 sinon.stub( sessionDetector, 'getGestaltSession' ).returns( Promise.resolve( exampleSession ) );
@@ -224,7 +223,7 @@ describe('AlSessionDetector', () => {
         describe("with a conduit session", () => {
             it( "should resolve true", ( done ) => {
                 AlSession.deactivateSession();
-                AlRuntimeConfiguration.setOption( ConfigOption.GestaltAuthenticate, false );
+                AlRuntimeConfiguration.options.noGestaltAuthentication = true;
                 let getSessionStub = sinon.stub( conduit, 'getSession' ).returns( Promise.resolve( exampleSession ) );
                 let ingestSessionStub = sinon.stub( sessionDetector, 'ingestExistingSession' ).returns( Promise.resolve( true ) );
                 sessionDetector.detectSession().then( result => {
@@ -240,7 +239,7 @@ describe('AlSessionDetector', () => {
         describe("with an auth0 session", () => {
             it( "should resolve true", ( done ) => {
                 AlSession.deactivateSession();
-                AlRuntimeConfiguration.setOption( ConfigOption.GestaltAuthenticate, false );
+                AlRuntimeConfiguration.options.noGestaltAuthentication = true;
 
                 let auth0AuthStub = sinon.stub( sessionDetector, 'getAuth0Authenticator' ).returns( <WebAuth><unknown>{
                     checkSession: ( config, callback ) => {

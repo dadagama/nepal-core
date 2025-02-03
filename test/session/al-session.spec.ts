@@ -16,7 +16,7 @@ import {
     AlCabinet,
     SubscriptionsClient,
     AlEntitlementCollection,
-    AlRuntimeConfiguration, ConfigOption,
+    AlRuntimeConfiguration,
 } from "@al/core";
 import {
     exampleActing,
@@ -265,27 +265,6 @@ describe('AlSession', () => {
       expect( storage.get("session" ) ).to.equal( null );
     } );
 
-    it( "should deactivate/clean storage if it is invalid", () => {
-      //    The "prevent local storage tampering" test
-      let badSession = {
-        authentication: {
-          token: exampleSession.authentication.token,
-          token_expiration: exampleSession.authentication.token_expiration,
-          user: Object.assign( {}, exampleSession.authentication.user ),
-          account: "ABCD1234"      /*  this is incorrect structure */
-        }
-      };
-      let warnStub = sinon.stub( console, 'warn' ).callThrough();
-      let errorStub = sinon.stub( console, 'error' ).callThrough();
-      storage.set("session", badSession );
-      let session = new AlSessionInstance();
-      expect( session.isActive() ).to.equal( false );
-      //    Secondary test: make sure the AlClientBeforeRequest hook doesn't do anything funky
-      let event = new AlClientBeforeRequestEvent( { url: 'https://api.cloudinsight.alertlogic.com', headers: {} } );
-      session.notifyStream.trigger( event );
-      expect( event.request.headers.hasOwnProperty( 'X-AIMS-Auth-Token' ) ).to.equal( false );
-    } );
-
     it( "should authenticate localStorage if it is valid", async () => {
       storage.set("session", exampleSession );
       let session = new AlSessionInstance();
@@ -315,7 +294,7 @@ describe('AlSession', () => {
 
   describe('when authenticated', () => {
     describe('primary and acting accounts', () => {
-      before( () => AlRuntimeConfiguration.setOption( ConfigOption.ResolveAccountMetadata, false ) );
+      before( () => AlRuntimeConfiguration.options.noAccountMetadata = true );
       after( () => AlRuntimeConfiguration.reset() );
       it( 'should return expected values', async () => {
         let session:AlSessionInstance = new AlSessionInstance();
@@ -337,30 +316,11 @@ describe('AlSession', () => {
 
   } );
 
-  describe(".setAuthentication", () => {
-    it( "should throw an error when given malformed data", async () => {
-      try {
-        let badSession:unknown = {
-          authentication: {
-            account: null,
-            token: "SOME FAKE TOKEN",
-            token_expiration: "2021-10-01"
-          }
-        };
-        let session = new AlSessionInstance();
-        await session.setAuthentication( badSession as AIMSSessionDescriptor );
-        expect( true ).to.equal( false );
-      } catch( e ) {
-        expect( e instanceof AlDataValidationError ).to.equal( true );
-      }
-    } );
-  } );
-
   describe( 'authentication methods', () => {
 
     beforeEach( () => {
         storage.destroy();
-        AlRuntimeConfiguration.setOption( ConfigOption.ResolveAccountMetadata, false );
+        AlRuntimeConfiguration.options.noAccountMetadata = true;
     } );
     afterEach( () => {
         sinon.restore();
@@ -559,29 +519,29 @@ describe('AlSession', () => {
       it('should return the data retention period in months for valid input', () => {
         // Mock resolvedAccount.entitlements.getProduct to return a valid product
         session['resolvedAccount'].entitlements.getProduct = () => ({ value_type: 'months', value: 21, productId: 'log_data_retention', active: true, expires: new Date() });
-        
+
         const result = session.getDataRetetionPeriod();
-        
+
         expect(result).to.equal(21);
       });
-    
+
       it('should return the default data retention period for unrecognized unit', () => {
         // Mock resolvedAccount.entitlements.getProduct to return an unrecognized unit
         session['resolvedAccount'].entitlements.getProduct = () => ({ value_type: 'days', value: 6, productId: 'log_data_retention', active: true, expires: new Date() });
-        
+
         const result = session.getDataRetetionPeriod();
-        
+
         expect(result).to.equal(DefaultDataRetentionPolicy.Value);
       });
-    
+
       it('should return the default data retention period on error', () => {
         // Mock resolvedAccount.entitlements.getProduct to throw an error
         session['resolvedAccount'].entitlements.getProduct = () => {
           throw new Error('Some error');
         }
-        
+
         const result = session.getDataRetetionPeriod();
-        
+
         expect(result).to.equal(DefaultDataRetentionPolicy.Value);
       });
     });

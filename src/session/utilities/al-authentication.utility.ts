@@ -1,8 +1,8 @@
 import { AlDefaultClient } from '../../client';
 import { AlSession } from '../al-session';
-import { AlLocatorService, AlLocation } from '../../common/navigation';
+import { AlLocatorService, AlLocation } from '../../navigation';
 import { AIMSClient, AIMSSessionDescriptor, FortraSession, AIMSAuthentication } from '../../aims-client/index';
-import { AlRuntimeConfiguration, ConfigOption } from '../../configuration';
+import { AlRuntimeConfiguration } from '../../configuration';
 import { AlConduitClient } from './al-conduit-client';
 import { getJsonPath } from '../../common/utility';
 import { AxiosResponse } from 'axios';
@@ -71,7 +71,7 @@ export class AlAuthenticationUtility {
      * Primary authentication method -- attempts to authenticate using a username and password.
      */
     public async authenticate( userName:string, passPhrase:string, payloadExtras?:any ):Promise<AlAuthenticationResult> {
-        let useGestalt = AlRuntimeConfiguration.getOption( ConfigOption.GestaltAuthenticate, false );
+        let useGestalt = ! AlRuntimeConfiguration.options.noGestaltAuthentication;
         if ( useGestalt ) {
             try {
                 let session = await AlDefaultClient.authenticateViaGestalt( userName, passPhrase, true, payloadExtras );
@@ -122,7 +122,7 @@ export class AlAuthenticationUtility {
      * an MFA verification code.
      */
     public async validateMfaCode( verificationCode:string ):Promise<AlAuthenticationResult> {
-        let useGestalt = AlRuntimeConfiguration.getOption( ConfigOption.GestaltAuthenticate, false );
+        let useGestalt = ! AlRuntimeConfiguration.options.noGestaltAuthentication;
         if ( useGestalt ) {
             try {
                 let session = await AlDefaultClient.authenticateWithMFAViaGestalt( this.getSessionToken(), verificationCode );
@@ -150,7 +150,7 @@ export class AlAuthenticationUtility {
      * Performs authentication using a session token (which must be separately populated into `this.state.sessionToken`).
      */
     public async acceptTermsOfService(acceptTOS:boolean = true):Promise<AlAuthenticationResult> {
-        let useGestalt = AlRuntimeConfiguration.getOption( ConfigOption.GestaltAuthenticate, false );
+        let useGestalt = ! AlRuntimeConfiguration.options.noGestaltAuthentication;
         if ( useGestalt ) {
             try {
                 let session = await AlDefaultClient.acceptTermsOfServiceViaGestalt( this.getSessionToken(), acceptTOS );

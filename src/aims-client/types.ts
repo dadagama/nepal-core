@@ -1,4 +1,4 @@
-import { AlChangeStamp } from '../../types';
+import { AlChangeStamp } from '../types';
 
 export interface AIMSMappedAccount {
     alertlogic_account: string;

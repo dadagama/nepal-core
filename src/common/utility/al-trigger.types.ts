@@ -3,6 +3,8 @@
  *  Copyright 2019 Alert Logic, Inc.
  */
 
+import { isPromiseLike } from './is-promise-like';
+
 /**
  *  @public
  *
@@ -20,54 +22,10 @@ export function AlTrigger( eventTypeName:string ) {
  *
  * Represents a typed event.
  */
-export class AlTriggeredEvent<ResponseType=any>
+export abstract class AlTriggeredEvent<ResponseType=any>
 {
-    public eventTypeName:string;
-    public responses:ResponseType[] = [];
-
     constructor( syntheticName?:string ) {
-        this.eventTypeName = syntheticName || this.constructor.prototype.eventTypeName;
-    }
-
-    /**
-     * Retrieves type name
-     */
-    public getEventType() {
-        return this.eventTypeName;
-    }
-
-    /**
-     *  Allows hooks to provide feedback/responses to the triggering agent
-     */
-    public respond( response:ResponseType ) {
-        this.responses.push( response );
-    }
-
-    /**
-     *  Retrieves the first response (or returns undefined), removing it from the list of responses.
-     */
-    public response():ResponseType|undefined {
-        return this.responses.shift();
-    }
-
-    /**
-     *  Returns true if any response matches the given value, or false otherwise.
-     */
-    public anyResponseEquals( targetValue:ResponseType ):boolean {
-        return this.responses.reduce<boolean>(   ( accumulated, response ) => {
-                                            return (accumulated || response === targetValue);
-                                        },
-                                        false );
-    }
-
-    /**
-     *  Returns true if the given callback returns true for any of the responses, or false otherwise.
-     */
-    public anyResponseWith( checkCallback:{(responseValue:ResponseType):boolean} ):boolean {
-        return this.responses.reduce<boolean>(   ( accumulated, response ) => {
-                                            return (accumulated || checkCallback(response));
-                                        },
-                                        false );
+        ( this as any ).eventTypeName = syntheticName || this.constructor.prototype.eventTypeName;
     }
 }
 
@@ -104,10 +62,10 @@ export class AlTriggerSubscription<EventType>
         return this;
     }
 
-    trigger( event:EventType ) {
+    trigger( event:EventType ):void|boolean|Promise<void> {
         if ( this.active && this.triggerCallback ) {
             if ( this.filterCb === null || this.filterCb( event ) ) {
-                this.triggerCallback( event );
+                return this.triggerCallback( event );
             }
         }
     }
@@ -172,20 +130,31 @@ export class AlTriggerStream
         child.tap();
     }
 
-    public trigger<EventType extends AlTriggeredEvent>( event:EventType ):EventType {
-        let eventType = event.getEventType();
+    public async trigger<EventType extends AlTriggeredEvent>( event:EventType ):Promise<EventType> {
+        let eventType = ( event as any ).eventTypeName ?? 'unknown';
         if ( ! this.flowing ) {
             this.captured.push( event );
             return event;
         }
+        let promises:PromiseLike<any>[] = [];
+
         Object.values( this.getBucket( eventType ) )
-                .forEach(   subscription => {
-                                try {
-                                    subscription.trigger( event );
-                                } catch( e ) {
-                                    console.warn(`Trigger callback for event ${event.eventTypeName} threw exception: ${e.message}; ignoring.` );
-                                }
-                            } );
+                        .forEach( subscription => {
+                                    try {
+                                        const result = subscription.trigger( event );
+                                        if ( isPromiseLike( result ) ) {
+                                            promises.push( result );
+                                        }
+                                    } catch( e ) {
+                                        console.warn(`Trigger callback for event ${(event as any).eventTypeName} threw exception`, e );
+                                    }
+                                } );
+
+        if ( promises.length ) {
+            try {
+                await Promise.allSettled( promises );
+            } catch( e ) {}
+        }
 
         return this.downstream ? this.downstream.trigger( event ) : event;
     }
@@ -244,5 +213,17 @@ export class AlSubscriptionGroup
             }
         } );
         this.subscriptions = [];
+    }
+}
+
+export class AlEventStream {
+    public events = new AlTriggerStream();
+
+    public async dispatch<EventType extends AlTriggeredEvent>( event:EventType ) {
+        return this.events.trigger( event );
+    }
+
+    public on<EventType extends AlTriggeredEvent>( eventType:Function, callback:AlTriggeredEventCallback<EventType> ):AlTriggerSubscription<EventType> {
+        return this.events.attach( eventType, callback );
     }
 }

@@ -12,13 +12,13 @@ import { AlErrorHandler } from '../../error-handler';
 import {
     AlLocation,
     AlLocatorService,
-} from "../../common/navigation";
+} from "../../navigation";
 import { AlStopwatch } from "../../common/utility";
 
 import { AlSession } from '../al-session';
 import { AlActingAccountResolvedEvent } from '../events';
 import { AlConduitClient } from './al-conduit-client';
-import { AlRuntimeConfiguration, ConfigOption } from '../../configuration';
+import { AlRuntimeConfiguration } from '../../configuration';
 
 export class AlSessionDetector
 {
@@ -144,7 +144,7 @@ export class AlSessionDetector
         /**
          * Can Gestalt's session status endpoint confirm we have a session?
          */
-        if ( AlRuntimeConfiguration.getOption( ConfigOption.GestaltAuthenticate, false ) ) {
+        if ( ! AlRuntimeConfiguration.options.noGestaltAuthentication ) {
             try {
                 let session = await this.getGestaltSession();
                 if ( session ) {

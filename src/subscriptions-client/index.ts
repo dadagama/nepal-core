@@ -1,2 +1,2 @@
 export * from "./subscriptions-client";
-export * from "./types/index";
+export * from "./types";
