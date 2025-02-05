@@ -6,6 +6,7 @@
  */
 
 import { AlLocatorService } from './locator.service';
+import { AlRuntimeConfiguration } from '../configuration';
 
 /**
  * @public
@@ -243,7 +244,10 @@ class AlRouteIterationState {
 
     constructor( public rootNode:AlRoute,
                  public resolve:boolean = false,
-                 public truncateLocal:boolean = false ) {
+                 public truncateLocal?:boolean ) {
+        if ( typeof this.truncateLocal === undefined ) {
+            this.truncateLocal = !! AlRuntimeConfiguration.options.truncateLocalLinks;
+        }
         this.host = rootNode.host;
         this.url = rootNode.host.currentUrl;
         let hashOffset = this.url.indexOf("#");
@@ -388,7 +392,7 @@ export class AlRoute {
      *
      * @returns Returns true if the route (or one of its children) is activated, false otherwise.
      */
-    refresh( resolve:boolean = false, truncateLocalURLs:boolean = false ) {
+    refresh( resolve:boolean = false, truncateLocalURLs?:boolean ) {
         try {
             let state = new AlRouteIterationState( this, resolve, truncateLocalURLs );
             this.internalRefresh( state );

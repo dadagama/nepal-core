@@ -85,9 +85,10 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.InsightAPI,
         uri: 'https://api.product.dev.alertlogic.com',
-        environment: 'integration|development',
+        environment: 'integration|development|embedded-integration|embedded-development',
         residency: 'US',
     },
+    /*
     {
         locTypeId: AlLocation.InsightAPI,
         uri: 'https://api.xdr.foundation-stage.cloudops.fortradev.com',
@@ -100,6 +101,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         environment: 'embedded-development',
         residency: 'US',
     },
+    */
 
     /**
      * Gestalt api API locations

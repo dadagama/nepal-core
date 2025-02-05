@@ -74,6 +74,7 @@ export interface AlContextOptions {
     embeddedFortraApp?:boolean;
     externalConduitIFrame?:string;
     defaultAccountId?:string;
+    truncateLocalLinks?:boolean;
 }
 
 /**

@@ -1,7 +1,6 @@
 import { AxiosResponse } from 'axios';
-import { AlBaseError, AlAPIServerError, AlWrappedError, AlCabinet } from '../common';
+import { AlBaseError, AlAPIServerError, AlWrappedError, AlCabinet, AlGlobalizer } from '../common';
 import { AlDefaultClient, APIRequestParams } from '../client';
-import { AlGlobalizer } from '../common';
 
 export interface AlErrorDescriptor {
     title:string;
@@ -33,6 +32,12 @@ export class AlErrorHandler
     public static log( error:AxiosResponse|AlBaseError|Error|string|any, commentary?:string, categoryId?:string, overrideVerbosity?:boolean ) {
         AlErrorHandler.prepare();
         const normalized = AlErrorHandler.normalize( error );
+        if ( typeof error === 'string' && typeof categoryId === 'string'
+                    &&
+             ! commentary.includes(" ") && commentary.toLowerCase() === commentary && commentary.length < 32 ) {
+            categoryId = commentary;
+            commentary = undefined;
+        }
         const effectiveCategoryId = categoryId ?? 'general';
         if ( overrideVerbosity || AlErrorHandler.verbose || AlErrorHandler.categories.includes( effectiveCategoryId ) ) {
             console.log( commentary ? `${commentary}: ${normalized.message}` : normalized.message );
