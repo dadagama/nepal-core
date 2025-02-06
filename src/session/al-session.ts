@@ -120,9 +120,12 @@ export class AlSessionInstance
        * API requests from being fired before whatever application has imported us has had a chance to bootstrap.
        */
       const persistedSession = this.storage.get("session") as AIMSSessionDescriptor;
-      if ( persistedSession && persistedSession.hasOwnProperty( "authentication" ) && persistedSession.authentication.token_expiration >= this.getCurrentTimestamp() ) {
+      if ( ( persistedSession?.authentication?.token_expiration ?? 0 ) >= this.getCurrentTimestamp()
+                &&
+            persistedSession?.authentication?.account?.id ) {
         this.restoreSession( persistedSession );
       } else {
+          console.warn("TOTALLY IGNORING STORED SESSSION!" );
         this.storage.destroy();
       }
 
@@ -776,7 +779,7 @@ export class AlSessionInstance
 
         return this.resolvedAccount;
       } catch( e ) {
-        console.error( e );
+        console.error( "FAILED to resolve acting account!", e );
         throw e;
       }
     }
