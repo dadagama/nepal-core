@@ -259,6 +259,12 @@ export class AlSessionInstance
         const accountDetails = await AIMSClient.getAccountDetails( account );
         return await this.setActingAccount( accountDetails );
       }
+      if ( account.id === '0' ) {
+        //  This case may occur in embedded mode, after we consider ourselves authenticated but BEFORE we have resolved the
+        //  acting user to a distinct alertlogic account Id.  Just smile and wave...
+        this.resolvedAccount = new AlActingAccountResolvedEvent( account, new AlEntitlementCollection(), new AlEntitlementCollection() );
+        return Promise.resolve( this.resolvedAccount );
+      }
       const previousAccount               = this.sessionData.acting;
       const mustResolveAccount            = ! this.sessionData.acting
                                               || this.sessionData.acting.id !== account.id;

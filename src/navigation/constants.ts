@@ -118,6 +118,9 @@ export class AlLocation
                 locTypeId: locTypeId,
                 environment: 'embedded-development',
                 uri: `https://foundation.foundation-dev.cloudops.fortradev.com/*/`,
+                aliases: [
+                    `https://local.foundation.foundation-dev.cloudops.fortradev.com:8888/*/`
+                ]
             },
             {
                 locTypeId: locTypeId,
