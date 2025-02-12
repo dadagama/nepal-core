@@ -16,7 +16,7 @@ export interface AlErrorDescriptor {
 export class AlErrorHandler
 {
     public static initialized = false;
-    public static categories:string[] = [];
+    public static categories:{[cat:string]:boolean} = {};
     public static upstream?:{(error:AlBaseError):void};
     public static verbose = false;
     protected static storage:AlCabinet;
@@ -39,8 +39,9 @@ export class AlErrorHandler
             commentary = undefined;
         }
         const effectiveCategoryId = categoryId ?? 'general';
-        if ( overrideVerbosity || AlErrorHandler.verbose || AlErrorHandler.categories.includes( effectiveCategoryId ) ) {
+        if ( overrideVerbosity || AlErrorHandler.verbose || AlErrorHandler.categories[effectiveCategoryId] || AlErrorHandler.categories["*"] ) {
             console.log( commentary ? `${commentary}: ${normalized.message}` : normalized.message );
+            AlErrorHandler.categories[effectiveCategoryId] = true;
         }
     }
 
@@ -101,10 +102,7 @@ export class AlErrorHandler
     public static enable( ...categories:string[] ) {
         const storage = AlErrorHandler.prepare();
         categories.forEach( ( categoryId ) => {
-            if ( categoryId === '*' ) {
-                AlErrorHandler.verbose = true;
-            }
-            AlErrorHandler.categories.push( categoryId );
+            AlErrorHandler.categories[categoryId] = true;
         } );
         storage.set( "visible", AlErrorHandler.categories ).synchronize();
     }
@@ -116,10 +114,10 @@ export class AlErrorHandler
         const storage = AlErrorHandler.prepare();
         categories.forEach( ( categoryId ) => {
             if ( categoryId === '*' ) {
-                AlErrorHandler.categories = [];
+                AlErrorHandler.categories = {};
                 AlErrorHandler.verbose = false;
             } else {
-                AlErrorHandler.categories = AlErrorHandler.categories.filter( c => c !== categoryId );
+                delete AlErrorHandler.categories[categoryId];
             }
         } );
 
@@ -186,16 +184,15 @@ export class AlErrorHandler
     protected static prepare():AlCabinet {
         if ( ! AlErrorHandler.initialized ) {
             AlErrorHandler.storage = AlCabinet.persistent("errors");
-            AlErrorHandler.categories = AlErrorHandler.storage.get( "visible", {} );
-            if ( ! Array.isArray( AlErrorHandler.categories ) ) {
-                AlErrorHandler.categories = [];
+            let categories = AlErrorHandler.storage.get( "visible", {} );
+            if ( typeof( categories ) !== 'object' || categories === null ) {
+                categories = {};
             }
-            if ( AlErrorHandler.categories.includes("*") ) {
-                AlErrorHandler.verbose = true;
+            AlErrorHandler.verbose = !!categories["*"];
+            if ( Object.keys( categories ).length > 0 ) {
+                console.log(`Notice: logging enabled for categories [${Object.keys(categories).join(", ")}]` );
             }
-            if ( AlErrorHandler.categories.length > 0 ) {
-                console.log(`Notice: logging enabled for categories [${AlErrorHandler.categories.join(", ")}]` );
-            }
+            AlErrorHandler.categories = categories;
             AlErrorHandler.initialized = true;
         }
         return AlErrorHandler.storage;

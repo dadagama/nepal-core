@@ -55,17 +55,11 @@ export class AlIdentityProviders
         let targetURL = url ?? window?.location?.href ?? '';
         if ( AlIdentityProviders.inAuth0Workflow(window?.location?.href) ) {
             try {
-                AlErrorHandler.log( "IdP Warmup: initializing auth0" );
                 let authenticator = await this.getAuth0Authenticator();
                 let config = this.getAuth0Config( { usePostMessage: true, prompt: 'none' } );
                 let accessToken = await this.getAuth0SessionToken( authenticator, config, 5000 );
-                if ( accessToken ) {
-                    AlErrorHandler.log("IdP Warmup: procured auth0 access token" );
-                } else {
-                    AlErrorHandler.log("IdP Warmup: auth0 did not yield an access token" );
-                }
             } catch( e ) {
-                AlErrorHandler.log(e, "IdP Warmup: auth0 initialization failed" );
+                AlErrorHandler.log(e, "IdP Warmup: auth0 initialization failed", "auth" );
             }
             return this.maybeRewriteBrokenURL( targetURL );
         } else if ( ! AlIdentityProviders.usingTokenInjection( targetURL ) ) {
@@ -177,10 +171,10 @@ export class AlIdentityProviders
 
                                     if ( cloakPhase > 5 ) {
                                         this.allIsLost = true;
-                                        AlErrorHandler.log("Refusing to initialize keycloak after too many redirect cycles" );
+                                        AlErrorHandler.log("Refusing to initialize keycloak after too many redirect cycles", "auth" );
                                         resolve();
                                     } else {
-                                        AlErrorHandler.log(`Initializing cloak in phase [${cloakPhase}]: ${onLoad} (uri: ${window.location.href})`);
+                                        AlErrorHandler.log(`Initializing cloak in phase [${cloakPhase}]: ${onLoad} (uri: ${window.location.href})`, "auth");
                                         let initResult = await cloak.init( {
                                                                         onLoad,
                                                                         silentCheckSsoRedirectUri,
@@ -254,7 +248,6 @@ export class AlIdentityProviders
      */
     protected maybeRewriteBrokenURL( inputURL:string ):string|undefined {
         try {
-            AlErrorHandler.log( `IdP warmup: evaluating input URL [${inputURL}]` );
             let verifyMfaRouteMatcher = /\?state=(.*)\#\/mfa\/verify(.*)/;
             let altVerifyMfaRouteMatcher = /\?token=(.*)&state=(.*)\#\/mfa\/verify(.*)/;
             let acceptTosRouteMatcher = /\?state=(.*)\#\/terms-of-service(.*)/;
@@ -264,14 +257,12 @@ export class AlIdentityProviders
 
             if ( nodeId === AlLocation.AccountsUI || nodeId === AlLocation.MagmaUI ) {
                 if ( inputURL.match( verifyMfaRouteMatcher ) ) {
-                    AlErrorHandler.log(`IdP warmup: MFA validation URL detected` );
                     let matches = verifyMfaRouteMatcher.exec( inputURL );
                     let stateValue = matches[1];
                     let qsValue = matches[2];
                     const delimiter = qsValue.includes("?") ? "&" : "?";
                     return inputURL.replace( verifyMfaRouteMatcher, `#/mfa/verify${qsValue}${delimiter}state=${stateValue}` );
                 } else if ( inputURL.match( altVerifyMfaRouteMatcher ) ) {
-                    AlErrorHandler.log(`IdP warmup: MFA validation URL detected (alternate)` );
                     let matches = altVerifyMfaRouteMatcher.exec( inputURL );
                     let tokenValue = matches[1];
                     let stateValue = matches[2];
@@ -279,7 +270,6 @@ export class AlIdentityProviders
                     const delimiter = qsValue.includes("?") ? "&" : "?";
                     return inputURL.replace( altVerifyMfaRouteMatcher, `#/mfa/verify${qsValue}${delimiter}token=${tokenValue}&state=${stateValue}` );
                 } else if ( inputURL.match( acceptTosRouteMatcher ) ) {
-                    AlErrorHandler.log(`IdP warmup: TOS acceptance URL detected` );
                     let matches = acceptTosRouteMatcher.exec( inputURL );
                     let stateValue = matches[1];
                     let qsValue = matches[2];
@@ -292,7 +282,6 @@ export class AlIdentityProviders
                     //  This is an Auth0 redirect URL.  It needs to be massaged to be gracefully handled by angular.
                     let delimiter = matches[3].includes("?") ? "&" : "?";
                     const rewrittenURL = `${matches[1]}/${matches[3]}${delimiter}error=login_required&state=${matches[2]}`;
-                    AlErrorHandler.log(`IdP warmup: login required URL detected` );
                     return rewrittenURL;
                 }
             }

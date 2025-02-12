@@ -113,6 +113,10 @@ export class AlLocation
                 locTypeId: locTypeId,
                 environment: 'development',
                 uri: `http://localhost:${devPort}`,
+                aliases: [
+                    `http://localhost:8916`,
+                    `http://localhost:8917`
+                ]
             },
             {
                 locTypeId: locTypeId,

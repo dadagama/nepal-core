@@ -53,19 +53,24 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.GlobalAPI,
         insightLocationId: 'insight-global',
         uri: 'https://api.global-integration.product.dev.alertlogic.com',
-        environment: 'integration|development|embedded-development|embedded-integration',
-/*        environment: 'integration|development', */
+//        environment: 'integration|development|embedded-development|embedded-integration',
+        environment: 'integration|development',
         external: true
     },
-/*
     {
         locTypeId: AlLocation.GlobalAPI,
         insightLocationId: 'insight-global',
-        uri: 'https://api.xdr.foundation-dev.cloudops.fortradev.com',
+        uri: 'https://api.global.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration',
+        external: true
+    },
+    {
+        locTypeId: AlLocation.GlobalAPI,
+        insightLocationId: 'insight-global',
+        uri: 'https://api.global.xdr.foundation-dev.cloudops.fortradev.com',
         environment: 'embedded-development|embedded-integration',
         external: true
     },
-*/
 
     /**
     *  Cloud Insight API locations
@@ -85,10 +90,10 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.InsightAPI,
         uri: 'https://api.product.dev.alertlogic.com',
-        environment: 'integration|development|embedded-integration|embedded-development',
+//        environment: 'integration|development|embedded-integration|embedded-development',
+        environment: 'integration|development',
         residency: 'US',
     },
-    /*
     {
         locTypeId: AlLocation.InsightAPI,
         uri: 'https://api.xdr.foundation-stage.cloudops.fortradev.com',
@@ -101,7 +106,6 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         environment: 'embedded-development',
         residency: 'US',
     },
-    */
 
     /**
      * Gestalt api API locations

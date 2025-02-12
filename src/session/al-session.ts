@@ -125,7 +125,6 @@ export class AlSessionInstance
             persistedSession?.authentication?.account?.id ) {
         this.restoreSession( persistedSession );
       } else {
-          console.warn("TOTALLY IGNORING STORED SESSSION!" );
         this.storage.destroy();
       }
 
@@ -159,9 +158,6 @@ export class AlSessionInstance
               }
               this.setTokenInfo( token, expirationTTL );
               console.log("Updated AIMS Token to expire in %s seconds from now", offset );
-          },
-          logging: ( enable:boolean ) => {
-              AlErrorHandler.verbose = enable;
           }
       } );
     }
@@ -213,6 +209,19 @@ export class AlSessionInstance
           throw new Error( "AIMS authentication response contains unexpected expiration timestamp in the past" );
         }
 
+        let actingAccountId = proposal.acting?.id || proposal.authentication?.account?.id;
+        if ( actingAccountId === '0' ) {
+          //  This occurs when we are running as a single spa plugin, where we initially have only a token to work with.
+          try {
+            let tokenInfo = await AIMSClient.getTokenInfo( proposal.authentication.token, true );
+            proposal.acting = Object.assign( {}, tokenInfo.account );
+            proposal.authentication.account = Object.assign( {}, tokenInfo.account );
+            proposal.authentication.user = Object.assign( {}, tokenInfo.user );
+          } catch( e ) {
+            AlErrorHandler.log( e, `AlSession.setAuthentication() could not correlate token with AIMS identity information`, "auth" );
+          }
+        }
+
         // Now that the content of the authentication session descriptor has been validated, let's make it effective
         // Note: we only merge whitelisted fields, so arbitrary data can't be committed to localStorage.
         deepMerge( this.sessionData.authentication.user, proposal.authentication.user );
@@ -232,7 +241,7 @@ export class AlSessionInstance
         this.storage.set("session", this.sessionData );
         return result;
       } catch( e ) {
-        AlErrorHandler.log( e, `AlSession.setAuthentication() failed` );
+        AlErrorHandler.log( e, `AlSession.setAuthentication() failed`, "auth" );
         this.deactivateSession();
         throw e;
       } finally {
@@ -259,12 +268,7 @@ export class AlSessionInstance
         const accountDetails = await AIMSClient.getAccountDetails( account );
         return await this.setActingAccount( accountDetails );
       }
-      if ( account.id === '0' ) {
-        //  This case may occur in embedded mode, after we consider ourselves authenticated but BEFORE we have resolved the
-        //  acting user to a distinct alertlogic account Id.  Just smile and wave...
-        this.resolvedAccount = new AlActingAccountResolvedEvent( account, new AlEntitlementCollection(), new AlEntitlementCollection() );
-        return Promise.resolve( this.resolvedAccount );
-      }
+
       const previousAccount               = this.sessionData.acting;
       const mustResolveAccount            = ! this.sessionData.acting
                                               || this.sessionData.acting.id !== account.id;

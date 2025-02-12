@@ -6,7 +6,6 @@
  */
 
 import { AlLocatorService } from './locator.service';
-import { AlRuntimeConfiguration } from '../configuration';
 
 /**
  * @public
@@ -246,7 +245,7 @@ class AlRouteIterationState {
                  public resolve:boolean = false,
                  public truncateLocal?:boolean ) {
         if ( typeof this.truncateLocal === undefined ) {
-            this.truncateLocal = !! AlRuntimeConfiguration.options.truncateLocalLinks;
+            this.truncateLocal = AlRoute.truncateLocalURLs;
         }
         this.host = rootNode.host;
         this.url = rootNode.host.currentUrl;
@@ -271,6 +270,9 @@ class AlRouteIterationState {
  */
 export class AlRoute {
     public static debug:boolean = false;
+
+    /* If true, removes all but the anchor fragment of URLs on the "acting" node */
+    public static truncateLocalURLs:boolean = false;
 
     /* A global cache of compiled regexes for match checking */
     public static reCache:{[pattern:string]:RegExp|null} = {};
@@ -388,13 +390,12 @@ export class AlRoute {
      * simply wraps the tree iteration process in exception handling.
      *
      * @param resolve - If true, forces the calculated href and visibility properties to be recalculated.
-     * @param truncateLocalURLs - If true, removes all but the anchor fragment of URLs on the "acting" node
      *
      * @returns Returns true if the route (or one of its children) is activated, false otherwise.
      */
-    refresh( resolve:boolean = false, truncateLocalURLs?:boolean ) {
+    refresh( resolve:boolean = false ) {
         try {
-            let state = new AlRouteIterationState( this, resolve, truncateLocalURLs );
+            let state = new AlRouteIterationState( this, resolve, AlRoute.truncateLocalURLs );
             this.internalRefresh( state );
         } catch( e ) {
             console.error(`Navigation Error: could not refresh menu: `, e );
@@ -520,8 +521,8 @@ export class AlRoute {
     /**
      * Retrieves the full URL for a route, if applicable.
      */
-    toHref( truncateLocalURLs?:boolean ) {
-        this.refresh( true, truncateLocalURLs );
+    toHref() {
+        this.refresh( true );
         return this.href;
     }
 

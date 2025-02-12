@@ -24,14 +24,14 @@ describe('AlErrorHandler', () => {
             sinon.restore();
         } );
         it("Should handle any input without blowing up", () => {
-            AlErrorHandler.verbose = true;
+            AlErrorHandler.enable( "*" );
             AlErrorHandler.log( http404Response, "Got a weird response" );
             AlErrorHandler.log( new AlBaseError( "Something is rotten in the state of Denmark." ) );
             AlErrorHandler.log( new Error("Something stinks under the kitchen sink." ) );
             AlErrorHandler.log( "Throwing strings as Errors is silly and should never be done, but what can you do?", "Some comment" );
             AlErrorHandler.log( 42 );
             expect( logStub.callCount ).to.equal( 5 );  //  1 for each .log call
-            AlErrorHandler.verbose = false;
+            AlErrorHandler.disable( "*" );
             AlErrorHandler.log( "This should not get emitted" );
             expect( logStub.callCount ).to.equal( 5 );  //  1 for each .log call
         } );

@@ -146,13 +146,15 @@ describe( 'AlRoute', () => {
             expect( routeHref ).to.equal( 'https://another.unrealdomain.com/other/subdirectory/#/some/random/path' );
         } );
         it("should use localized URLs when configured to do so", () => {
+            AlRoute.truncateLocalURLs = true;
             const route = AlRoute.link( routingHost, AlLocation.MagmaUI, '/#/just/an/anchor/tag' );
-            let routeHref = route.toHref( true );
+            let routeHref = route.toHref();
             expect( routeHref ).to.equal( '#/just/an/anchor/tag' );
 
             const externalRoute = AlRoute.link( routingHost, AlLocation.OverviewUI, '/#/just/an/anchor/tag' );
-            let externalHref = externalRoute.toHref( true );
+            let externalHref = externalRoute.toHref();
             expect( externalHref ).to.equal("https://console.overview.alertlogic.com/#/just/an/anchor/tag" );
+            AlRoute.truncateLocalURLs = false;
         } );
     } );
 
@@ -444,13 +446,15 @@ describe( 'AlRoute', () => {
         } );
 
         it( "should truncate local links to include only their anchor fragment", () => {
+            AlRoute.truncateLocalURLs = true;
             const menu:AlRoute = new AlRoute( routingHost, menuDefinition );
-            menu.refresh( true, true );
+            menu.refresh( true );
             let route1 = menu.children[0].children[0];
             let route2 = menu.children[0].children[1];
 
             expect( route1.href ).to.equal( '#/child-route-1' );
             expect( route2.href ).to.equal( 'https://console.incidents.alertlogic.com/#/child-route-2' );
+            AlRoute.truncateLocalURLs = false;
         } );
     } );
 
