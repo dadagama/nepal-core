@@ -75,6 +75,7 @@ export interface AlContextOptions {
     externalConduitIFrame?:string;
     defaultAccountId?:string;
     truncateLocalLinks?:boolean;
+    resourceBaseUrl?:string;
 }
 
 /**
