@@ -91,6 +91,9 @@ export class AlLocation
                 environment: 'production',
                 residency: 'US',
                 uri: `https://console.alertlogic.com`,
+                data: {
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThleThtOHkwNzI0Mm5wd2ppMm5hM3B3In0.rLCKBbefBUL1WH8igtUVpg'
+                },
             },
             {
                 locTypeId: locTypeId,
@@ -98,6 +101,9 @@ export class AlLocation
                 residency: 'US',
                 uri: `https://${appCode}-production-staging-us.ui-dev.product.dev.alertlogic.com`,
                 aliases: [ `https://${appCode}-production-staging-uk.ui-dev.product.dev.alertlogic.com` ],
+                data: {
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThleThtOHkwNzI0Mm5wd2ppMm5hM3B3In0.rLCKBbefBUL1WH8igtUVpg'
+                }
             },
             {
                 locTypeId: locTypeId,
@@ -108,6 +114,9 @@ export class AlLocation
                     `https://${appCode}-*.ui-dev.product.dev.alertlogic.com`,
                     `https://${appCode}-pr-*.ui-dev.product.dev.alertlogic.com`
                 ],
+                data: {
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThnMnZmMGUwaW13Mmlwd3I0em5zM3BjIn0.whlbgkSaGpcynFS_gTFbsA'
+                },
             },
             {
                 locTypeId: locTypeId,
@@ -116,7 +125,10 @@ export class AlLocation
                 aliases: [
                     `http://localhost:8916`,
                     `http://localhost:8917`
-                ]
+                ],
+                data: {
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbDZwaHZwYmowNDNmM2Ntbjhma3Z1MGtpIn0.PbNCAX6Pt713V_5xp2AuNg'
+                },
             },
             {
                 locTypeId: locTypeId,
@@ -124,12 +136,18 @@ export class AlLocation
                 uri: `https://foundation.foundation-dev.cloudops.fortradev.com/*/`,
                 aliases: [
                     `https://local.foundation.foundation-dev.cloudops.fortradev.com:8888/*/`
-                ]
+                ],
+                data: {
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbDZwaHZwYmowNDNmM2Ntbjhma3Z1MGtpIn0.PbNCAX6Pt713V_5xp2AuNg'
+                },
             },
             {
                 locTypeId: locTypeId,
                 environment: 'embedded-integration',
                 uri: `https://foundation.foundation-stage.cloudops.fortradev.com/*/`,
+                data: {
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThnMnZmMGUwaW13Mmlwd3I0em5zM3BjIn0.whlbgkSaGpcynFS_gTFbsA'
+                },
             }
         ];
     }
