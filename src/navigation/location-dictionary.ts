@@ -163,6 +163,22 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         residency: 'US',
     },
 
+    {
+        locTypeId: AlLocation.LegacyUI,
+        insightLocationId: 'defender-us-ashburn',
+        uri: 'https://defender.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration',
+        residency: 'US',
+    },
+
+    {
+        locTypeId: AlLocation.LegacyUI,
+        insightLocationId: 'defender-us-ashburn',
+        uri: 'https://defender.xdr.foundation-dev.cloudops.fortradev.com',
+        environment: 'embedded-development',
+        residency: 'US',
+    },
+
 
     /**
     *  Insight BI
@@ -456,6 +472,16 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         uri: 'https://{service}.mdr.product.dev.alertlogic.com',
         environment: 'integration|development|embedded-development|embedded-integration'
     },
+    {
+        locTypeId: AlLocation.MDRAPI,
+        uri: 'https://{service}.mdr.api.global.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration'
+    },
+    {
+        locTypeId: AlLocation.MDRAPI,
+        uri: 'https://{service}.mdr.api.global.xdr.foundation-dev.cloudops.fortradev.com',
+        environment: 'embedded-development'
+    },
 
     /**
      * Analytic Engine Configuration
@@ -470,6 +496,16 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         uri: 'https://aetuner.mdr.product.dev.alertlogic.com',
         environment: 'development|integration',
     },
+    {
+        locTypeId: AlLocation.AETunerAPI,
+        uri: 'https://aetuner.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration'
+    },
+    {
+        locTypeId: AlLocation.AETunerAPI,
+        uri: 'https://aetuner.xdr.foundation-dev.cloudops.fortradev.com',
+        environment: 'embedded-development'
+    },
 
     /**
      * Integrations  API locations
@@ -483,6 +519,16 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.IntegrationsAPI,
         uri: 'https://connectors.mdr.product.dev.alertlogic.com',
         environment: 'integration|development|embedded-development|embedded-integration'
+    },
+    {
+        locTypeId: AlLocation.IntegrationsAPI,
+        uri: 'https://connectors.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration'
+    },
+    {
+        locTypeId: AlLocation.IntegrationsAPI,
+        uri: 'https://connectors.xdr.foundation-dev.cloudops.fortradev.com',
+        environment: 'embedded-development'
     },
 
     /**
@@ -499,6 +545,17 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         environment: 'integration|development|embedded-development|embedded-integration'
     },
     {
+        locTypeId: AlLocation.ResponderAPI,
+        uri: 'https://responder.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration'
+    },
+    {
+        locTypeId: AlLocation.ResponderAPI,
+        uri: 'https://responder.xdr.foundation-dev.cloudops.fortradev.com',
+        environment: 'embedded-development'
+    },
+
+    {
         locTypeId: AlLocation.ResponderWS,
         uri: 'wss://responder-async.mdr.global.alertlogic.com',
         environment: 'production|production-staging'
@@ -506,7 +563,17 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.ResponderWS,
         uri: 'wss://responder-async.mdr.product.dev.alertlogic.com',
-        environment: 'integration|development|embedded-development|embedded-integration'
+        environment: 'integration|development'
+    },
+    {
+        locTypeId: AlLocation.ResponderWS,
+        uri: 'wss://responder-async.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration'
+    },
+    {
+        locTypeId: AlLocation.ResponderWS,
+        uri: 'wss://responder-async.xdr.foundation-dev.cloudops.fortradev.com',
+        environment: 'embedded-development'
     },
 
     /**
@@ -517,14 +584,20 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         uri: 'https://distributor.mdr.global.alertlogic.com',
         environment: 'production|production-staging'
     },
-
-    /**
-     * Distributor  API locations
-     */
     {
         locTypeId: AlLocation.DistributorAPI,
         uri: 'https://distributor.mdr.product.dev.alertlogic.com',
-        environment: 'integration|development|embedded-development|embedded-integration'
+        environment: 'integration|development'
+    },
+    {
+        locTypeId: AlLocation.DistributorAPI,
+        uri: 'https://distributor.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration'
+    },
+    {
+        locTypeId: AlLocation.DistributorAPI,
+        uri: 'https://distributor.xdr.foundation-dev.cloudops.fortradev.com',
+        environment: 'embedded-development'
     },
 
     /**
@@ -558,6 +631,20 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.YARDAPI,
         uri: 'https://yard.dsaops.alertlogic.net',
         environment: 'integration|development|embedded-development|embedded-integration',
+        residency: "US",
+        external: true
+    },
+    {
+        locTypeId: AlLocation.YARDAPI,
+        uri: 'https://yard.xdr.foundation-stage.cloudops.fortradev.com',
+        environment: 'embedded-integration',
+        residency: "US",
+        external: true
+    },
+    {
+        locTypeId: AlLocation.YARDAPI,
+        uri: 'https://yard.xdr.foundation-dev.cloudops.fortradev.com',
+        environment: 'embedded-development',
         residency: "US",
         external: true
     },

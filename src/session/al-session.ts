@@ -722,7 +722,11 @@ export class AlSessionInstance
           event.request.headers = event.request.headers || {};
           if ( ! ( 'X-AIMS-Auth-Token' in event.request.headers ) && ! ( 'Authorization' in event.request.headers ) ) {
             if ( this.sessionData?.fortraSession ) {
-              event.request.headers['Authorization'] = `Bearer ${this.sessionData.fortraSession.accessToken}`;
+              if ( AlRuntimeConfiguration.options.embeddedFortraApp ) {
+                  event.request.withCredentials = true; //  no explicit token; rely on HTTP-only cookies
+              } else {
+                  event.request.headers['Authorization'] = `Bearer ${this.sessionData.fortraSession.accessToken}`;
+              }
               if ( environment === 'embedded-development' ) {
                   event.request.headers['X-Fortra-Environment'] = "dev";
               }

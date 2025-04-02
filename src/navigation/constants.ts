@@ -103,7 +103,7 @@ export class AlLocation
                 aliases: [ `https://${appCode}-production-staging-uk.ui-dev.product.dev.alertlogic.com` ],
                 data: {
                     mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThleThtOHkwNzI0Mm5wd2ppMm5hM3B3In0.rLCKBbefBUL1WH8igtUVpg'
-                }
+                },
             },
             {
                 locTypeId: locTypeId,
