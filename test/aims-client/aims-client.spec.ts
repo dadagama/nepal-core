@@ -19,13 +19,12 @@ const queryParams = { foo: 'bar' };
 
 describe('AIMS Client Test Suite:', () => {
   let stub: sinon.SinonSpy;
-  let apiBaseURL, globalBaseURL;
+  let globalBaseURL;
   beforeEach(() => {
     AlLocatorService.setContext( { environment: "integration" } );
     AlDefaultClient.reset()
             .setGlobalParameters( { noEndpointsResolution: true } );
     stub = sinon.stub(AlDefaultClient as any, "axiosRequest").returns( Promise.resolve( { status: 200, data: 'Some result', config: {} } ) );
-    apiBaseURL = AlLocatorService.resolveURL( AlLocation.InsightAPI );
     globalBaseURL = AlLocatorService.resolveURL( AlLocation.GlobalAPI );
   });
   afterEach(() => {
@@ -46,7 +45,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users` );
       expect( payload.data ).to.deep.equal( { name, email, mobile_phone: mobilePhone } );
     });
   });
@@ -56,7 +55,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "DELETE" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users/${userId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users/${userId}` );
     });
   });
   describe('when retrieving a user record', () => {
@@ -65,7 +64,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users/${userId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users/${userId}` );
     });
   });
   describe('when retrieving permissions for a user', () => {
@@ -74,7 +73,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users/${userId}/permissions` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users/${userId}/permissions` );
     });
   });
   describe('when retrieving account details', () => {
@@ -83,7 +82,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/account` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/account` );
     });
   });
   describe('when retrieving managed account details', () => {
@@ -92,7 +91,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/accounts/managed` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/accounts/managed` );
     });
   });
   describe('when retrieving managed account Ids', () => {
@@ -101,7 +100,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/account_ids/managed` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/account_ids/managed` );
     });
   });
   describe('when retrieving managing account Id', () => {
@@ -110,7 +109,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/account_ids/managing` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/account_ids/managing` );
     });
   });
   describe('when retrieving managing accounts', () => {
@@ -119,7 +118,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/accounts/managing` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/accounts/managing` );
     });
   });
   describe('when enabling MFA for a user account', () => {
@@ -129,7 +128,7 @@ describe('AIMS Client Test Suite:', () => {
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
       expect( payload.data ).to.deep.equal( { mfa_required: true } );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/account` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/account` );
     });
   });
   describe('when authenticating a user', () => {
@@ -163,7 +162,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/change_password` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/change_password` );
       expect( payload.data ).to.deep.equal( { email, current_password: password, new_password: newPassword } );
     });
   });
@@ -173,7 +172,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/token_info` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/token_info` );
     });
   });
   describe("when retrieving token info for a specific token", () => {
@@ -194,7 +193,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/reset_password` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/reset_password` );
       expect( payload.data ).to.deep.equal( { email, return_to: returnTo } );
     });
   });
@@ -206,7 +205,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "PUT" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/reset_password/${token}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/reset_password/${token}` );
       expect( payload.data ).to.deep.equal( { password } );
     });
   });
@@ -218,7 +217,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/roles` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/roles` );
       expect( payload.data ).to.deep.equal( { name, permissions } );
     });
   });
@@ -229,7 +228,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "DELETE" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/roles/${roleId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/roles/${roleId}` );
     });
   });
   describe('when retrieving a global role', () => {
@@ -239,7 +238,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/roles/${roleId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/roles/${roleId}` );
     });
   });
   describe('when retrieving an account role', () => {
@@ -249,7 +248,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/roles/${roleId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/roles/${roleId}` );
     });
   });
   describe('when retrieving all global roles', () => {
@@ -258,7 +257,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/roles` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/roles` );
     });
   });
   describe('when retrieving all account roles', () => {
@@ -267,7 +266,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/roles` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/roles` );
     });
   });
   describe('when updating the name and permissions of a role', () => {
@@ -278,7 +277,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/roles` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/roles` );
     });
   });
   describe('when updating the name of a role', () => {
@@ -288,7 +287,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/roles` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/roles` );
       expect( payload.data ).to.deep.equal( { name } );
     });
   });
@@ -299,7 +298,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/roles` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/roles` );
       expect( payload.data ).to.deep.equal( { permissions } );
     });
   });
@@ -311,7 +310,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/user/mfa/enroll` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/user/mfa/enroll` );
       expect( payload.data ).to.deep.equal( { mfa_uri: uri, mfa_codes: codes } );
     });
   });
@@ -322,7 +321,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "DELETE" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/user/mfa/${email}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/user/mfa/${email}` );
     });
   });
   describe('when retrieving user details', () => {
@@ -332,7 +331,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users/${userId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users/${userId}` );
     });
   });
   describe('when retrieving users', () => {
@@ -342,7 +341,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users` );
     });
   });
   describe('when creating an access key', () => {
@@ -352,7 +351,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users/${userId}/access_keys` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users/${userId}/access_keys` );
       expect( payload.data ).to.deep.equal( { label } );
     });
   });
@@ -364,7 +363,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "POST" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/access_keys/${accessKeyId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/access_keys/${accessKeyId}` );
       expect( payload.data ).to.deep.equal( { label } );
     });
   });
@@ -375,7 +374,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/access_keys/${accessKeyId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/access_keys/${accessKeyId}` );
     });
   });
   describe('when retrieving all access keys for a user', () => {
@@ -384,7 +383,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "GET" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users/${userId}/access_keys?out=full` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users/${userId}/access_keys?out=full` );
     });
   });
   describe('when deleting an access key for a user', () => {
@@ -394,7 +393,7 @@ describe('AIMS Client Test Suite:', () => {
       expect(stub.callCount).to.equal(1);
       const payload = stub.args[0][0];
       expect( payload.method ).to.equal( "DELETE" );
-      expect( payload.url ).to.equal( `${apiBaseURL}/aims/v1/${accountId}/users/${userId}/access_keys/${accessKeyId}` );
+      expect( payload.url ).to.equal( `${globalBaseURL}/aims/v1/${accountId}/users/${userId}/access_keys/${accessKeyId}` );
     });
   });
   describe( 'AIMSEnrollURI', () => {
