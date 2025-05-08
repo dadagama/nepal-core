@@ -932,7 +932,7 @@ export class AlApiClient
         }
         this.events.trigger( new AlClientBeforeRequestEvent( config ) );        //    Allow event subscribers to modify the request (e.g., add a session token header) if they want
         if ( ! this.isBrowserBased() ) {
-            config.headers['Origin'] = AlLocatorService.resolveURL( AlLocation.AccountsUI );
+            config.headers['Origin'] = AlLocatorService.resolveURL( AlLocation.MagmaUI );
         }
         config.validateStatus = ( responseStatus:number ) => {
             //  This forces all responses to run through our response interceptor

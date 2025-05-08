@@ -1,6 +1,4 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
-import * as sinon from 'sinon';
+import { describe, expect, test, afterEach, vi } from 'vitest';
 import {
     deepMerge,
     getJsonPath,
@@ -8,7 +6,7 @@ import {
 } from '@al/core';
 
 describe( `getJsonPath`, () => {
-    it( `Should retrieve the expected data from deeply nested objects`, () => {
+    test( `Should retrieve the expected data from deeply nested objects`, () => {
         const testSubject = {
             child: {
                 granddaughter: {
@@ -36,8 +34,8 @@ describe( `getJsonPath`, () => {
 } );
 
 describe( `setJsonPath`, () => {
-    afterEach( () => sinon.restore() );
-    it( `Should create/set data as expected inside an existing object`, () => {
+    afterEach( () => vi.restoreAllMocks() );
+    test( `Should create/set data as expected inside an existing object`, () => {
         let target = {
             existing: {
                 type: "cat",
@@ -66,9 +64,9 @@ describe( `setJsonPath`, () => {
 
 describe( `deepMerge`, () => {
     afterEach( () => {
-        sinon.restore();
+        vi.restoreAllMocks();
     } );
-    it( `Should smoosh objects together into an expected pattern`, () => {
+    test( `Should smoosh objects together into an expected pattern`, () => {
         let object1 = {
             dog: {
                 name: "Gus",

@@ -1,13 +1,8 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
-import * as sinon from 'sinon';
+import { expect, describe, test, afterEach, vi } from 'vitest';
 import { isPromiseLike } from '@al/core';
 
-describe( `isPromiseLike`, () => {
-    afterEach( () => {
-        sinon.restore();
-    } );
-    it( `should differentiate between promise-y and non-promise-y things`, () => {
+test( `isPromiseLike`, () => {
+    describe( `should differentiate between promise-y and non-promise-y things`, () => {
         let testObjects = [
             "kevin",
             { then: true },

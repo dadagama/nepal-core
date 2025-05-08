@@ -77,13 +77,22 @@ export class AlConduitClient
         let locationId = AlRuntimeConfiguration.options.conduitLocationId ?? AlLocation.MagmaUI;
         AlConduitClient.conduitUri = AlLocatorService.resolveURL( locationId, '/conduit.html', { residency, environment } );
         AlErrorHandler.log( `Notice: conduit client is using '${AlConduitClient.conduitUri}' as target` );
-        const fragment = AlConduitClient.document.createDocumentFragment();
-        const container = AlConduitClient.document.createElement( "div" );
+        const fragment = this.getFragment();
+        const container = this.getContainer();
         container.setAttribute("id", "conduitClient" );
         container.setAttribute("class", "conduit-container" );
         fragment.appendChild( container );
         container.innerHTML = `<iframe frameborder="0" src="${AlConduitClient.conduitUri}" style="width:1px;height:1px;position:absolute;left:-1px;top:-1px;"></iframe>`;
         return fragment;
+    }
+
+    /* These two getters only exist so that they can be more easily mocked in units */
+    public getFragment():DocumentFragment {
+        return AlConduitClient.document.createDocumentFragment();
+    }
+
+    public getContainer():HTMLElement {
+        return AlConduitClient.document.createElement( "div" );
     }
 
     public async ready() {
@@ -269,7 +278,7 @@ export class AlConduitClient
     }
 
     public onConduitReady(event: any ): void {
-        if ( AlConduitClient.conduitUri.startsWith( event.origin ) ) {
+        if ( AlConduitClient.conduitUri?.startsWith( event.origin ) ) {
             AlConduitClient.conduitWindow = event.source;
             AlConduitClient.conduitOrigin = event.origin;
             AlConduitClient.ready.resolve( true );

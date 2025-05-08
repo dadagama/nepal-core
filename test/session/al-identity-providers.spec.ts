@@ -1,8 +1,6 @@
 import { WebAuth } from 'auth0-js';
-import { expect } from 'chai';
+import { beforeEach, afterEach, expect, describe, test, vi } from 'vitest';
 
-import { describe } from 'mocha';
-import * as sinon from 'sinon';
 import { exampleSession } from '../mocks';
 import { AlIdentityProviders, AlErrorHandler } from '@al/core';
 
@@ -14,11 +12,11 @@ describe('AlIdentityProviders', () => {
     } );
 
     afterEach( () => {
-        sinon.restore();
+        vi.restoreAllMocks();
     } );
 
     describe(".inAuth0Workflow()", () => {
-        it( "should distinguish auth0 redirection URLs", () => {
+        test( "should distinguish auth0 redirection URLs", () => {
             const url1 = `https://console.magma.product.dev.alertlogic.com/`
                         + `?state=1656b907-98d2-4d60-8ad2-ef95227c363e`
                         + `&session_state=15160e1c-ed64-4d04-9957-a78956f55434`
@@ -39,7 +37,7 @@ describe('AlIdentityProviders', () => {
     } );
 
     describe(".warmup()", () => {
-        it( "should return undefined for most URLs", () => {
+        test( "should return undefined for most URLs", () => {
             const url1 = `https://console.magma.product.dev.alertlogic.com/`
                         + `?state=1656b907-98d2-4d60-8ad2-ef95227c363e`
                         + `&session_state=15160e1c-ed64-4d04-9957-a78956f55434`
@@ -52,7 +50,7 @@ describe('AlIdentityProviders', () => {
 
         } );
 
-        it( "should redirect known auth0 url malformations correctly", () => {
+        test( "should redirect known auth0 url malformations correctly", () => {
             AlErrorHandler.verbose = true;
             const url1 = `https://console.magma.product.dev.alertlogic.com/?state=something#/mfa/verify`;
             expect( identityProviders['maybeRewriteBrokenURL']( url1 ) )

@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
+import { expect, describe, test } from 'vitest';
 import { AlEntitlementCollection } from '@al/core';
 
 describe( 'AlEntitlementCollection', () => {
@@ -29,7 +28,7 @@ describe( 'AlEntitlementCollection', () => {
     describe( 'WHEN empty', () => {
         let entitlements = new AlEntitlementCollection( [] );
 
-        it( "SHOULD handle lookups to products that don't exist", () => {
+        test( "SHOULD handle lookups to products that don't exist", () => {
             let emptyProduct = entitlements.getProduct("doesntExist");
             expect( emptyProduct ).to.be.an( 'object' );
             expect( emptyProduct.active ).to.equal( false );
@@ -39,16 +38,16 @@ describe( 'AlEntitlementCollection', () => {
     describe( 'WHEN populated', () => {
         let entitlements = AlEntitlementCollection.import( rawData );
 
-        it( 'SHOULD correctly identity CID2 users with the al_internal_user pseudoproperty', () => {
+        test( 'SHOULD correctly identity CID2 users with the al_internal_user pseudoproperty', () => {
             expect( entitlements.getProduct("al_internal_user").active ).to.equal( true );
         } );
 
-        it( "SHOULD correctly identity items with status 'pending_activation' and 'active' as active", () => {
+        test( "SHOULD correctly identity items with status 'pending_activation' and 'active' as active", () => {
             expect( entitlements.getProduct("apollo").active ).to.equal( true );
             expect( entitlements.getProduct("calliope").active ).to.equal( true );
         } );
 
-        it( "SHOULD correctly identity items with other statuses as inactive", () => {
+        test( "SHOULD correctly identity items with other statuses as inactive", () => {
             expect( entitlements.getProduct( "zeus" ).active ).to.equal( false );
         } );
     } );
@@ -56,7 +55,7 @@ describe( 'AlEntitlementCollection', () => {
     describe( 'evaluateExpression', () => {
         let entitlements = AlEntitlementCollection.import( rawData );
 
-        it( 'SHOULD correctly evaluate entitlement expressions', () => {
+        test( 'SHOULD correctly evaluate entitlement expressions', () => {
 
             expect( entitlements.evaluateExpression( "apollo|zeus" ) ).to.equal( true );                        //  because apollo is pending activation
             expect( entitlements.evaluateExpression( "calliope|zeus" ) ).to.equal( true );                      //  because calliope is active
@@ -69,7 +68,7 @@ describe( 'AlEntitlementCollection', () => {
             expect( entitlements.evaluateExpression( "demeter|apollo&!zeus" ) ).to.equal( true );               //  because even though demeter isn't active, apollo but NOT zeus evaluates to true
         } );
 
-        it( 'SHOULD always treat the wildcard entitlement "*" as enabled', () => {
+        test( 'SHOULD always treat the wildcard entitlement "*" as enabled', () => {
             expect( entitlements.evaluateExpression( "*" ) ).to.equal( true );                                  //  essentially, "anything"
             expect( entitlements.evaluateExpression( "!*" ) ).to.equal( false );                                //  essentially, "nothing"
             expect( entitlements.evaluateExpression( "*&!*" ) ).to.equal( false );                              //  essentially, "anything" and "nothing", which is logically ridiculous

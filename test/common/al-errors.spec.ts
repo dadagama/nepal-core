@@ -1,6 +1,4 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
-import * as sinon from 'sinon';
+import { expect, describe, afterEach, test, vi } from 'vitest';
 import { AxiosRequestConfig } from 'axios';
 import {
     AlAPIServerError,
@@ -15,11 +13,11 @@ import {
 
 describe( `Errors`, () => {
     afterEach( () => {
-        sinon.restore();
+        vi.restoreAllMocks();
     } );
     describe( 'AlAPIServerError', () => {
 
-        it( 'should instantiate as expected', () => {
+        test( 'should instantiate as expected', () => {
             const error = new AlAPIServerError( "Some error happened somewhere, somehow", "aims", 401 );
 
             expect( error.message ).to.be.a("string");
@@ -30,7 +28,7 @@ describe( `Errors`, () => {
     } );
 
     describe( 'AlDataValidationError', () => {
-        it( 'should instantiate as expected', () => {
+        test( 'should instantiate as expected', () => {
             let requestConfig = {} as AxiosRequestConfig;
             let data = {} as unknown;
             const error = new AlDataValidationError( "Some error happened somewhere, somehow", data, 'https://something#definitions/something-else', [ { thing: true } ], requestConfig );
@@ -42,7 +40,7 @@ describe( `Errors`, () => {
     } );
 
     describe( 'AlBadRequestError', () => {
-        it( 'should instantiate as expected', () => {
+        test( 'should instantiate as expected', () => {
             const error = new AlBadRequestError( "You made a bad request", "data", "aggregation.configuration.id", "This value cannot be specified for a creation request" );
 
             expect( error.httpResponseCode ).to.equal( 400 );
@@ -53,7 +51,7 @@ describe( `Errors`, () => {
         } );
     } );
     describe( 'AlUnauthenticatedRequestError', () => {
-        it( 'should instantiate as expected', () => {
+        test( 'should instantiate as expected', () => {
             const error = new AlUnauthenticatedRequestError( "You cannot login in", "aims" );
 
             expect( error.httpResponseCode ).to.equal( 401 );
@@ -62,7 +60,7 @@ describe( `Errors`, () => {
         } );
     } );
     describe( 'AlUnauthorizedRequestError', () => {
-        it( 'should instantiate as expected', () => {
+        test( 'should instantiate as expected', () => {
             const error = new AlUnauthorizedRequestError( "You cannot access that stuff", "stuff" );
 
             expect( error.httpResponseCode ).to.equal( 403 );
@@ -71,7 +69,7 @@ describe( `Errors`, () => {
         } );
     } );
     describe( 'AlUnimplementedMethodError', () => {
-        it( 'should instantiate as expected', () => {
+        test( 'should instantiate as expected', () => {
             const error = new AlUnimplementedMethodError( "No way, Jose" );
 
             expect( error.httpResponseCode ).to.equal( 501 );
@@ -79,7 +77,7 @@ describe( `Errors`, () => {
         } );
     } );
     describe( 'AlNotFoundError', () => {
-        it( 'should instantiate as expected', () => {
+        test( 'should instantiate as expected', () => {
             const error = new AlNotFoundError( "I don't think so, Bob" );
 
             expect( error.httpResponseCode ).to.equal( 404 );
@@ -88,7 +86,7 @@ describe( `Errors`, () => {
     } );
 
     describe( `AlBadGatewayError`, () => {
-        it( 'should instantiate as expected', () => {
+        test( 'should instantiate as expected', () => {
             const error = new AlBadGatewayError( "Sorry, Bob, someone else messed up.", "AIMS", { anything: true } );
             expect( error.httpResponseCode ).to.equal( 502 );
             expect( error.message ).to.be.a("string");

@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
+import { expect, describe, test, beforeEach, vi } from 'vitest';
 import {
     AlTrigger,
     AlTriggeredEvent,
@@ -23,7 +22,7 @@ describe( 'AlTriggerStream', () => {
         handlerCallCount = 0;
     } );
 
-    it("should initialize with expected state", () => {
+    test("should initialize with expected state", () => {
 
         const stream = new AlTriggerStream();
 
@@ -34,7 +33,7 @@ describe( 'AlTriggerStream', () => {
         expect( stream.subscriptionCount ).to.equal( 0 );
     } );
 
-    it("should allow 'bottled' initialization", () => {
+    test("should allow 'bottled' initialization", () => {
         const stream = new AlTriggerStream( false );
 
         let subscription = stream.attach( EventType1, emptyHandler );
@@ -48,7 +47,7 @@ describe( 'AlTriggerStream', () => {
         subscription.cancel();
     } );
 
-    it("should allow one stream to siphon the events from another stream", () => {
+    test("should allow one stream to siphon the events from another stream", () => {
         const stream = new AlTriggerStream( false );
 
         let subscription = stream.attach( EventType1, emptyHandler );
@@ -70,7 +69,7 @@ describe( 'AlTriggerStream', () => {
         subscription2.cancel();
     } );
 
-    it("should respect pause, resume, and filter on subscriptions", () => {
+    test("should respect pause, resume, and filter on subscriptions", () => {
         const stream = new AlTriggerStream();
 
         const subscription = stream.attach( EventType1, ( event ) => {

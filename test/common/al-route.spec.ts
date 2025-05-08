@@ -1,6 +1,4 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
-import * as sinon from 'sinon';
+import { vi, expect, describe, test, beforeEach, afterEach } from 'vitest';
 import {
     AlLocation,
     AlLocatorService,
@@ -40,10 +38,10 @@ export class MockRoutingHost implements AlRoutingHost {
     getBookmark = (id:string):AlRoute => null;
 }
 
-describe( 'AlRoute', () => {
+test( 'AlRoute', () => {
 
-    beforeEach( () => sinon.restore() );
-    afterEach( () => sinon.restore() );
+    beforeEach( () => vi.restoreAllMocks() );
+    afterEach( () => vi.restoreAllMocks() );
 
     const fakeEntitlements = {
         'a': true,

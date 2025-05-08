@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
+import { beforeEach, afterEach, expect, describe, test, vi } from 'vitest';
 import {
     AlLocation,
     AlLocationDescriptor,
@@ -13,18 +12,23 @@ describe( 'AlLocatorServiceInstance', () => {
     const locationDictionary = JSON.parse( JSON.stringify( AlLocationDictionary ) );       //  cheap and easy clone
 
     beforeEach( () => {
+        vi.stubGlobal( 'window', { location: { href: '' } } );
         locator = new AlLocatorServiceInstance(  locationDictionary,
                                         "https://console.incidents.product.dev.alertlogic.com/#/summary/2?aaid=2&locid=defender-us-denver",
                                         { insightLocationId: "defender-us-defender", accessible: [ "defender-us-denver", "insight-us-virginia" ] } );
     } );
 
+    afterEach( () => {
+        vi.unstubAllGlobals();
+    } );
+
     describe( 'utility methods', () => {
 
-        it( "should propertly calculate the base from a complex URL", () => {
+        test( "should propertly calculate the base from a complex URL", () => {
             expect( locator["getBaseUrl"]( "https://lmgtfy.com/?q=cache+miss" ) ).to.equal( "https://lmgtfy.com" );
             expect( locator["getBaseUrl"]( "https://console.overview.alertlogic.com/#/remediations-scan-status/2" ) ).to.equal("https://console.overview.alertlogic.com" );
         } );
-        it( "should properly resolve URI patterns to location nodes", () => {
+        test( "should properly resolve URI patterns to location nodes", () => {
             let node = locator.getNodeByURI( "https://console.overview.alertlogic.com/#/remediations-scan-status/2" );
             expect( node ).to.be.an( "object" );
             expect( node.environment ).to.equal( "production" );
@@ -64,7 +68,7 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( node.uri ).to.equal( "https://iris-ui-pr-8.ui-dev.product.dev.alertlogic.com");
         } );
 
-        it( "should propertly identify the acting node from the acting URL passed to the constructor", () => {
+        test( "should propertly identify the acting node from the acting URL passed to the constructor", () => {
             locator = new AlLocatorServiceInstance(  locationDictionary,
                                             "https://console.incidents.product.dev.alertlogic.com/#/summary/2?aaid=2&locid=defender-us-denver",
                                             { insightLocationId: "defender-us-defender", accessible: [ "defender-us-denver", "insight-us-virginia" ] } );
@@ -74,7 +78,7 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( actor.environment ).to.equal( 'integration' );
         } );
 
-        it( "should allow retrieval of nodes with contextual overrides", () => {
+        test( "should allow retrieval of nodes with contextual overrides", () => {
             let node = locator.getNode( AlLocation.LegacyUI, { insightLocationId: 'defender-us-denver', environment: "production", residency: 'US' } );
             expect( node ).to.be.an( 'object' );
             expect( node.residency ).to.equal( 'US' );
@@ -92,7 +96,7 @@ describe( 'AlLocatorServiceInstance', () => {
             node = locator.getNode( AlLocation.OverviewUI, { accessible: [ "defender-us-denver" ] } );
         } );
 
-        it( "should normalize insight locations to defender ones", () => {
+        test( "should normalize insight locations to defender ones", () => {
             locator.setContext( { insightLocationId: "insight-us-virginia", accessible: [ "insight-us-virginia", "defender-us-ashburn" ], residency: 'US' } );
             expect( locator.getContext().insightLocationId ).to.equal( "defender-us-ashburn" );
             expect( locator.getContext().residency ).to.equal( 'US' );      //  this should be unchanged
@@ -112,7 +116,7 @@ describe( 'AlLocatorServiceInstance', () => {
     } );
 
     describe( 'given production-like location descriptors for the overview application', () => {
-        it("should infer correct context/sibling nodes for default/unrecognized URLs", () => {
+        test("should infer correct context/sibling nodes for default/unrecognized URLs", () => {
             //  Null (clears actor).  Because, evidently, Kevin likes `null` A LOT.
             locator.setActingUrl( undefined );
             expect( locator['actingUri'] ).to.equal( undefined );
@@ -132,7 +136,7 @@ describe( 'AlLocatorServiceInstance', () => {
 
         } );
 
-        it("should infer correct context/sibling nodes for production US URLs", () => {
+        test("should infer correct context/sibling nodes for production US URLs", () => {
             locator.setActingUrl( 'https://console.overview.alertlogic.com/#/remediations-scan-status/2' );
             let context = locator.getContext();
             expect( context.environment ).to.equal( "production" );
@@ -147,7 +151,7 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( locator.resolveURL( AlLocation.InsightAPI, "/aims/v1/2/accounts" ) ).to.equal( "https://api.cloudinsight.alertlogic.com/aims/v1/2/accounts" );
         } );
 
-        it("should infer correct context/sibling nodes for production UK URLs", () => {
+        test("should infer correct context/sibling nodes for production UK URLs", () => {
 
             locator.setActingUrl( 'https://console.overview.alertlogic.com/#/remediations-scan-status/2' );
             let context = locator.getContext();
@@ -164,7 +168,7 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( locator.resolveURL( AlLocation.InsightAPI, "/aims/v1/2/accounts" ) ).to.equal( "https://api.cloudinsight.alertlogic.co.uk/aims/v1/2/accounts" );
         } );
 
-        it("should infer correct context/sibling nodes for integration URLs", () => {
+        test("should infer correct context/sibling nodes for integration URLs", () => {
 
             //  Context inferred from integration URL
             locator.setActingUrl( 'https://console.overview.product.dev.alertlogic.com/#/remediations-scan-status/2' );
@@ -181,7 +185,7 @@ describe( 'AlLocatorServiceInstance', () => {
 
         } );
 
-        it("should infer correct acting node for a magma production URL", () => {
+        test("should infer correct acting node for a magma production URL", () => {
 
             locator.setActingUrl( 'https://console.alertlogic.com/#/exposures/open/2' );
             let actor = locator.getActingNode();
@@ -190,7 +194,7 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( actor.residency ).to.equal( "US" );
         } );
 
-        it("should infer correct context/sibling nodes for integration aliases", () => {
+        test("should infer correct context/sibling nodes for integration aliases", () => {
             //  Context inferred from PR demo bucket alias
             locator.setActingUrl( 'https://magma-pr-199.ui-dev.product.dev.alertlogic.com/#/remediations-scan-status/2' );
             let context = locator.getContext();
@@ -209,7 +213,7 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( locator.resolveURL( AlLocation.MagmaUI, '/#/remediations-scan-status/2' ) ).to.equal( 'https://magma-pr-199.ui-dev.product.dev.alertlogic.com/#/remediations-scan-status/2' );
         } );
 
-        it("should infer correct context/sibling nodes for local development URLs", () => {
+        test("should infer correct context/sibling nodes for local development URLs", () => {
             //  Context inferred from local/development URL
             locator.setActingUrl( 'http://localhost:4213/#/remediations-scan-status/2' );
             let context = locator.getContext();
@@ -224,7 +228,7 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( locator.resolveURL( AlLocation.InsightAPI, "/aims/v1/2/accounts" ) ).to.equal( "https://api.product.dev.alertlogic.com/aims/v1/2/accounts" );
         } );
 
-        it("should infer correct context & sibling nodes for fortra platform/embedded URLs", () => {
+        test("should infer correct context & sibling nodes for fortra platform/embedded URLs", () => {
             locator.setActingUrl( "https://foundation.foundation-dev.cloudops.fortradev.com/alxdr/#/dashboards?aaid=2&locid=default" );
             let context = locator.getContext();
             expect( context.environment ).to.equal("embedded-development");
@@ -235,12 +239,12 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( deepPathToSelf ).to.equal("https://foundation.foundation-dev.cloudops.fortradev.com/alxdr/#/relative/angular/path" );
         } );
 
-        it("should allow nodes to be searched", () => {
+        test("should allow nodes to be searched", () => {
             const matches = locator.search( loc => loc.locTypeId === AlLocation.OverviewUI ? true : false );
             expect( matches.length ).to.be.above( 0 );
         } );
 
-        it("should allow nodes to be retrieved by URI", () => {
+        test("should allow nodes to be retrieved by URI", () => {
             let match:AlLocationDescriptor = null;
 
             match = locator.getNodeByURI( "http://localhost:8001/#/some/arbitrary/path" );
@@ -273,7 +277,7 @@ describe( 'AlLocatorServiceInstance', () => {
     } );
 
     describe( "resolveURI method", () => {
-        it("should generate accurate URLs for a given context", () => {
+        test("should generate accurate URLs for a given context", () => {
             let uri;
 
             uri = locator.resolveURL( AlLocation.OverviewUI, '/#/some/path', { residency: 'US', environment: 'production' } );
@@ -298,12 +302,12 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( uri ).to.equal( "https://magma-pr-9.ui-dev.product.dev.alertlogic.com/#/summary/1" );
         } );
 
-        it( "should use window.location if the node isn't recognized", () => {
+        test( "should use window.location if the node isn't recognized", () => {
             let uri = locator.resolveURL( "SomethingUnrecognizable", '/#/arbitrary', { residency: "US", environment: "production" } );
             expect( uri ).to.equal( window.location.origin + ( ( window.location.pathname && window.location.pathname.length > 1 ) ? window.location.pathname : '' ) + "/#/arbitrary" );
         } );
 
-        it( "should prefix auth0 node with https", () => {
+        test( "should prefix auth0 node with https", () => {
             locator.setActingUrl( "https://console.incidents.alertlogic.com" );
             let uri = locator.resolveURL( AlLocation.Auth0 );
             expect( uri ).to.equal( "https://alertlogic.auth0.com" );
@@ -311,7 +315,7 @@ describe( 'AlLocatorServiceInstance', () => {
     } );
 
     describe( "with fortra embedded URLs", () => {
-        it("should identify platform-embedded URLs properly", () => {
+        test("should identify platform-embedded URLs properly", () => {
             locator.setActingUrl( "https://foundation.foundation-stage.cloudops.fortradev.com/test/#/dashboards?aaid=2&locid=default" );
 
             let match:AlLocationDescriptor = locator.getActingNode();

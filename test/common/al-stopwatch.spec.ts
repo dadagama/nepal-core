@@ -1,6 +1,4 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
-import * as sinon from 'sinon';
+import { expect, describe, test, afterEach, beforeEach, vi } from 'vitest';
 import { AlStopwatch } from '@al/core';
 
 describe( 'AlStopwatch', () => {
@@ -16,24 +14,24 @@ describe( 'AlStopwatch', () => {
     } );
 
     afterEach( () => {
-        afterEach( () => sinon.restore() );
+        afterEach( () => vi.restoreAllMocks() );
     } );
 
-    it("should instantiate via `later`", () => {
+    test("should instantiate via `later`", () => {
         stopwatch = AlStopwatch.later( callback );
         expect( stopwatch.callback ).to.equal( callback );
         expect( stopwatch.timer ).to.equal( null );
         expect( stopwatch.interval ).to.equal( 0 );
     } );
 
-    it("should instantiate via `once`", async () => {
+    test("should instantiate via `once`", async () => {
         stopwatch = AlStopwatch.once( callback, 100 );
         expect( stopwatch.callback ).to.equal( callback );
         expect( stopwatch.timer ).not.to.equal( null );
         expect( stopwatch.interval ).to.equal( 0 );
     } );
 
-    it("should instantiate via `repeatedly` WITHOUT immediate executation", async () => {
+    test("should instantiate via `repeatedly` WITHOUT immediate executation", async () => {
         return new Promise( ( resolve, reject ) => {
             stopwatch = AlStopwatch.repeatedly( callback, 100, false );
             expect( stopwatch.callback ).to.equal( callback );
@@ -53,7 +51,7 @@ describe( 'AlStopwatch', () => {
         } );
     } );
 
-    it("should instantiate via `repeatedly` WITH immediate executation", async () => {
+    test("should instantiate via `repeatedly` WITH immediate executation", async () => {
         return new Promise( ( resolve, reject ) => {
             stopwatch = AlStopwatch.repeatedly( callback, 100, true );
             expect( stopwatch.callback ).to.equal( callback );
@@ -68,7 +66,7 @@ describe( 'AlStopwatch', () => {
         } );
     } );
 
-    it("should instantiate and resolve via `promise()`", async () => {
+    test("should instantiate and resolve via `promise()`", async () => {
         let promise = AlStopwatch.promise( 100 );
         let executed:boolean = false;
         promise.then( () => executed = true );
@@ -77,7 +75,7 @@ describe( 'AlStopwatch', () => {
     } );
 
     describe( "`.again()`", async () => {
-        it( "should not create a new timer if one already exists", () => {
+        test( "should not create a new timer if one already exists", () => {
             stopwatch = AlStopwatch.repeatedly( callback, 10000 );
             const originalTimer = stopwatch.timer;
             expect( stopwatch.interval ).to.equal( 10000 );
@@ -88,31 +86,31 @@ describe( 'AlStopwatch', () => {
     } );
 
     describe( "`.reschedule()`", async () => {
-        it( "should call `cancel` and `again`", async () => {
+        test( "should call `cancel` and `again`", async () => {
             stopwatch = AlStopwatch.later( callback );
-            let cancel = sinon.spy( stopwatch, "cancel" );
-            let again = sinon.spy( stopwatch, "again" );
+            let cancel = vi.spyOn( stopwatch, "cancel" );
+            let again = vi.spyOn( stopwatch, "again" );
             stopwatch.reschedule( 10000 );
-            expect( cancel.callCount ).to.equal( 1 );
-            expect( again.callCount ).to.equal( 1 );
-            expect( again.args[0][0] ).to.equal( 10000 );
+            expect( cancel.mock.calls.length ).to.equal( 1 );
+            expect( again.mock.calls.length ).to.equal( 1 );
+            expect( again.mock.calls[0][0] ).to.equal( 10000 );
         } );
 
-        it( "should default to immediate reexecution", async () => {
+        test( "should default to immediate reexecution", async () => {
             stopwatch = AlStopwatch.later( callback );
-            let again = sinon.spy( stopwatch, "again" );
+            let again = vi.spyOn( stopwatch, "again" );
             stopwatch.reschedule();
-            expect( again.callCount ).to.equal( 1 );
-            expect( again.args[0][0] ).to.equal( 0 );
+            expect( again.mock.calls.length ).to.equal( 1 );
+            expect( again.mock.calls[0][0] ).to.equal( 0 );
         } );
     } );
 
     describe( "`.reschedule()`", async () => {
-        it( "should call `cancel` and `again`", async () => {
+        test( "should call `cancel` and `again`", async () => {
             stopwatch = AlStopwatch.later( callback );
-            let tick = sinon.spy( stopwatch, "tick" );
+            let tick = vi.spyOn( stopwatch, "tick" );
             stopwatch.now();
-            expect( tick.callCount ).to.equal( 1 );
+            expect( tick.mock.calls.length ).to.equal( 1 );
             expect( callCount ).to.equal( 1 );
         } );
     } );

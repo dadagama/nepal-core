@@ -1,6 +1,4 @@
-import { expect } from 'chai';
-import { describe } from 'mocha';
-import * as sinon from 'sinon';
+import { expect, describe, vi, test, beforeEach } from 'vitest';
 import {
     AlCardstackCharacteristics,
     AlCardstackView,
@@ -190,13 +188,13 @@ export class DummyCardstack extends AlCardstackView<DummyModel,DummyProperties>
 describe( 'AlCardstackView', () => {
 
     describe("`start()` method", () => {
-        it( 'should call generateCharacteristics if no characteristics are provided to the constructor', async () => {
+        test( 'should call generateCharacteristics if no characteristics are provided to the constructor', async () => {
             let stack = new DummyCardstack( false );    //  no characteristics
-            let spy = sinon.spy( stack, 'generateCharacteristics' );
+            let spy = vi.spyOn( stack, 'generateCharacteristics' );
             await stack.start();
-            expect( spy.callCount ).to.equal( 1 );
+            expect( spy.mock.calls.length ).to.equal( 1 );
         } );
-        it( 'should consume data as expected', async () => {
+        test( 'should consume data as expected', async () => {
 
             let stack = new DummyCardstack();
             await stack.start();
@@ -210,7 +208,7 @@ describe( 'AlCardstackView', () => {
             expect( stack.loadedPages ).to.equal( 2 );
 
         } );
-        it( 'should automatically populate values for properties with autoIndex enabled', async () => {
+        test( 'should automatically populate values for properties with autoIndex enabled', async () => {
             let stack = new DummyCardstack();
             await stack.start();
 
@@ -230,7 +228,7 @@ describe( 'AlCardstackView', () => {
             await stack.start();
         } );
 
-        it( '`getProperty()` should retrieve normalized property descriptor', () => {
+        test( '`getProperty()` should retrieve normalized property descriptor', () => {
             let date = stack.getProperty( "date_created" );
             expect( date ).to.be.an( 'object' );
             expect( date.property ).to.equal("date_created");
@@ -250,7 +248,7 @@ describe( 'AlCardstackView', () => {
             } ).to.throw();
         } );
 
-        it( '`getValue()` should always retrieve a reference to the normalized value descriptor', () => {
+        test( '`getValue()` should always retrieve a reference to the normalized value descriptor', () => {
             let color = stack.getProperty( "color" );
             let purple = stack.getValue( color, "purple" );
             let purple2 = stack.getValue( "color", "purple" );
@@ -261,14 +259,14 @@ describe( 'AlCardstackView', () => {
             expect( purple.caption ).to.equal( "Purplepink" );
             expect( purple.valueKey ).to.equal( "color-purple" );
         } );
-        it( '`getValue()` should throw when attempting to retrieve a value from a non-set property', () => {
+        test( '`getValue()` should throw when attempting to retrieve a value from a non-set property', () => {
             //  Make sure trying to get a value from a non-set property throws
             expect( () => {
                 let noValues = stack.getValue( "size", 0 );
             } ).to.throw();
 
         } );
-        it( '`getValue()` should throw when attempting to retrieve a value that does not exist', () => {
+        test( '`getValue()` should throw when attempting to retrieve a value that does not exist', () => {
             //  Make sure trying to get a value that doesn't exist throws
             expect( () => {
                 let fictional = stack.getValue( "color", "orangeyellow" );
@@ -283,7 +281,7 @@ describe( 'AlCardstackView', () => {
             stack = new DummyCardstack();
             await stack.start();
         } );
-        it( 'should sort numeric properties in the expected way', () => {
+        test( 'should sort numeric properties in the expected way', () => {
             let date = stack.getProperty( "date_created" );
             stack.applySortBy( date, 'asc' );
             let last = 0;
@@ -301,8 +299,6 @@ describe( 'AlCardstackView', () => {
             }
         } );
 
-        xit( 'should sort string properties in the expected way', () => {
-        } );
     } );
 
     describe( '`applyFilterBy()`', () => {
@@ -311,7 +307,7 @@ describe( 'AlCardstackView', () => {
             stack = new DummyCardstack();
             await stack.start();
         } );
-        it( 'should show/hide items based on a single property.', () => {
+        test( 'should show/hide items based on a single property.', () => {
             let firstCard = stack.cards[0];
             let color = stack.getValue( "color", firstCard.properties.color );
             stack.applyFilterBy( color );
@@ -327,7 +323,7 @@ describe( 'AlCardstackView', () => {
                 }
             }
         } );
-        it( 'should restore visibility if a filter is removed', () => {
+        test( 'should restore visibility if a filter is removed', () => {
             let firstCard = stack.cards[0];
             let color = stack.getValue( "color", firstCard.properties.color );
             stack.applyFilterBy( color );
@@ -338,7 +334,7 @@ describe( 'AlCardstackView', () => {
                 expect( card.visible ).to.equal( true );
             }
         } );
-        it( 'should show/hide items based on a single property/multiple values.', () => {
+        test( 'should show/hide items based on a single property/multiple values.', () => {
             for ( let i = 0; i < dummyColors.length; i++ ) {
                 stack.applyFilterBy( stack.getValue( "color", dummyColors[i].value ) );
                 expect( stack.activeFilters.length ).to.equal( 1 );
@@ -356,7 +352,7 @@ describe( 'AlCardstackView', () => {
             }
             expect( stack.activeFilters.length ).to.equal( 0 );      //  active filters should be empied when all values are removed
         } );
-        it( 'should show/hide items based on a custom filter', () => {
+        test( 'should show/hide items based on a custom filter', () => {
             let firstCard = stack.cards[0];
             let color = stack.getValue( "color", firstCard.properties.color );
             stack.applyFilterBy( color, false, ( e, p, f ) => false );
