@@ -239,7 +239,10 @@ class AlRouteIterationState {
     public url:string;
     public urlNoParams:string;
     public urlAppRoot:string;
+    public anchorRoute:string;
+    public locationId:string;
     public host:AlRoutingHost;
+    public activatedItem?:AlRoute;
 
     constructor( public rootNode:AlRoute,
                  public resolve:boolean = false,
@@ -256,9 +259,13 @@ class AlRouteIterationState {
         }
         this.urlNoParams = this.url.replace(/\?[^#]*/, '' );
         this.urlAppRoot = this.urlNoParams.replace(/#[^\?]*/, '' );
+        let anchorMatch = this.url.match( /#[^\?]*/ );
+        this.anchorRoute = anchorMatch ? anchorMatch[0].substring( 1 ) : '';
         if ( ! this.urlAppRoot.endsWith("/") ) {
             this.urlAppRoot += '/';     //  make sure we always have a trailing slash!
         }
+        let node = AlLocatorService.getActingNode();
+        this.locationId = node ? node.locTypeId : 'unknown';
     }
 }
 
@@ -272,10 +279,10 @@ export class AlRoute {
     public static debug:boolean = false;
 
     /* If true, removes all but the anchor fragment of URLs on the "acting" node */
-    public static truncateLocalURLs:boolean = false;
+    public static truncateLocalURLs:boolean = true;
 
     /* A global cache of compiled regexes for match checking */
-    public static reCache:{[pattern:string]:RegExp|null} = {};
+    public static reCache:{[pattern:string]:{matcher:RegExp|null,text:string}} = {};
 
     /* The route's caption, echoed from its definition but possibly translated */
     caption:string;
@@ -289,6 +296,9 @@ export class AlRoute {
     /* Is the menu item locked?  This prevents refresh cycles from changing its state. */
     locked:boolean = false;
 
+    /* Is this menu item located within the same app we're executing in? */
+    local:boolean = false;
+
     /* Is the menu item currently activated/expanded?  This will allow child items to be seen. */
     activated:boolean = false;
 
@@ -300,6 +310,9 @@ export class AlRoute {
 
     /* Base of target URL */
     baseHREF?:string;
+
+    /* Anchor/angular route only */
+    anchorRoute:string = "";
 
     /* Cached target URL */
     href?:string;
@@ -453,7 +466,7 @@ export class AlRoute {
         /* Evaluate fully qualified href, if visible/relevant */
         let action:AlRouteAction|null = this.getRouteAction();
         if ( action ) {
-            if ( this.visible && ( state.resolve || this.href === null ) && action.type === 'link' ) {
+            if ( this.visible && ( state.resolve || this.href === undefined ) && action.type === 'link' ) {
                 if ( ! this.evaluateHref( state, action ) ) {
                     state.depth--;
                     return this.disable();
@@ -464,7 +477,7 @@ export class AlRoute {
         this.activated = childActivated;
 
         //  activation test for path match
-        if ( ! this.activated ) {
+        if ( ! this.activated && ! state.activatedItem ) {
             this.evaluateActivation( state );
         }
 
@@ -507,6 +520,8 @@ export class AlRoute {
     disable():boolean {
         this.activated = false;
         this.visible = false;
+        this.enabled = false;
+        this.href = undefined;
         return false;
     }
 
@@ -547,6 +562,40 @@ export class AlRoute {
      *---- Helper Methods ---------------------------------------------
      */
 
+    //  Substitute route parameters into the path pattern; fail on missing required parameters,
+    //  ignore missing optional parameters (denoted by percentage sign), and trim any trailing slashes and spaces.
+    substituteRouteParameters( text:string, trimStart:boolean = false ):string|undefined {
+        let missing = false;
+        text = text.replace( /:[a-zA-Z_%]+/g, match => {
+            let variableId = match.substring( 1 );
+            let required = true;
+            if ( variableId[variableId.length-1] === '%' ) {
+                required = false;
+                variableId = variableId.substring( 0, variableId.length - 1 );
+            }
+            if ( this.host.routeParameters.hasOwnProperty( variableId ) ) {
+                return this.host.routeParameters[variableId];
+            } else if ( required ) {
+                missing = true;
+                return `:${variableId}`;
+            } else {
+                return '';
+            }
+        } )
+        .replace( /[ \/]+$/g, '' );     //  remove all spaces and trailing slashes
+        if ( trimStart ) {
+            if ( text.startsWith("#") ) {
+                text = text.substring( 1 );
+            } else if ( text.startsWith("/#") ) {
+                text = text.substring( 2 );     //  this corrects for an earlier assumption that we would always be executing at the top level directory
+            }
+        }
+        if ( missing ) {
+            return undefined;
+        }
+        return text;
+    }
+
     /**
      * Evaluates the HREF for an route with action type 'link'
      */
@@ -555,8 +604,8 @@ export class AlRoute {
             this.href = action.url;
             return true;
         }
-        if( !action.location ){
-            console.warn(`Warning: cannot link to undefined location in menu item '${this.caption}` );
+        if ( ! action.location ) {
+            console.warn(`Warning: undefined link in menu item with caption '${this.caption}` );
             return false;
         }
         const node = AlLocatorService.getNode( action.location );
@@ -566,27 +615,11 @@ export class AlRoute {
         }
 
         this.baseHREF = node.uri.replace( /[ \/]+$/g, '' );
-        let path = action.path ?? '';
-        let missing = false;
-        //  Substitute route parameters into the path pattern; fail on missing required parameters,
-        //  ignore missing optional parameters (denoted by percentage sign), and trim any trailing slashes and spaces.
-        path = path.replace( /:[a-zA-Z_%]+/g, match => {
-                let variableId = match.substring( 1 );
-                let required = true;
-                if ( variableId[variableId.length-1] === '%' ) {
-                    required = false;
-                    variableId = variableId.substring( 0, variableId.length - 1 );
-                }
-                if ( this.host.routeParameters.hasOwnProperty( variableId ) ) {
-                    return this.host.routeParameters[variableId];
-                } else if ( required ) {
-                    missing = true;
-                    return `:${variableId}`;
-                } else {
-                    return '';
-                }
-            } )
-            .replace( /[ \/]+$/g, '' );     //  remove all spaces and trailing slashes
+
+        let path = this.substituteRouteParameters( action.path ?? '' );
+        if ( ! path ) {
+            return false;
+        }
 
         this.href = this.baseHREF + path;
         if ( this.host.decorateHref ) {
@@ -595,50 +628,84 @@ export class AlRoute {
         if ( state.truncateLocal && state.urlAppRoot && this.href.startsWith( state.urlAppRoot ) ) {
             //  "Local" mode will emit URLs composed solely of anchor fragments for routes on the active app's domain
             this.href = this.href.substring( state.urlAppRoot.length );
+            this.local = true;
+            this.anchorRoute = this.substituteRouteParameters( path, true );
         }
-        return ! missing;
+        return true;
     }
 
     /**
      * Evaluates the activation state of the route
      */
     evaluateActivation( state:AlRouteIterationState ):boolean {
+        if ( AlRoute.debug && ! this.parent ) {
+            console.log(`==== Activation Detection: route [${state.anchorRoute}], url [${state.urlNoParams}] ==== `);
+        }
         if ( this.definition.activationRule === 'inert' || ! this.href ) {
             //  Not a candidate for activation
             return false;
         }
         if ( this.baseHREF && state.url.startsWith( this.baseHREF ) ) {
+            //  We are looking in the right place!
             const noParamsHref = this.href.includes('?') ? this.href.substring(0, this.href.indexOf('?')) : this.href;
-            if ( state.urlNoParams === noParamsHref ) {
+
+            if ( state.urlNoParams === noParamsHref || state.anchorRoute === this.anchorRoute ) {
                 //  If our full URL *contains* the current URL, we are activated
                 if ( AlRoute.debug ) {
-                    console.log("Navigation: activating route [%s] based on exact path match", this.definition.caption, state.urlNoParams, this.definition );
+                    console.log(`    ==> ACTIVATED [${this.caption}] based on exact path match`, this );
                 }
                 this.activated = true;
             } else if ( this.definition.matches ) {
                 //  If we match any other match patterns, we are activated
-                let matchedPattern = this.definition.matches.find( matchPattern => {
-                    if ( ! ( matchPattern in AlRoute.reCache ) ) {
-                        try {
-                            const normalized = `^${this.baseHREF}${matchPattern}$`.replace("/", "\\/" );
-                            AlRoute.reCache[matchPattern] = new RegExp( normalized );
-                        } catch( e ) {
-                            console.warn( `Warning: invalid navigation match pattern '${matchPattern}' cannot be compiled as a regular expression; ignoring.` );
-                            AlRoute.reCache[matchPattern] = null;
-                        }
-                    }
-                    let regexp = AlRoute.reCache[matchPattern];
-                    return regexp ? regexp.test( state.urlNoParams ) : false;
-                } );
-                if ( matchedPattern ) {
+                if ( this.definition.matches.find( matchPattern => this.evaluateMatch( matchPattern, state ) ) ) {
                     if ( AlRoute.debug ) {
-                        console.log(`Navigation: activating route [%s] based on regular expression match [%s]`, this.definition.caption, matchedPattern, this.definition );
+                        console.log(`    ==> ACTIVATED [${this.caption}] based on match pattern`, this );
                     }
                     this.activated = true;
                 }
             }
         }
+        if ( this.activated ) {
+            state.activatedItem = this;
+        }
         return this.activated;
+    }
+
+    evaluateMatch( matchPattern:string, state:AlRouteIterationState ):boolean {
+        if ( ! ( matchPattern in AlRoute.reCache ) ) {
+            if ( this.local ) {
+                let normalized = matchPattern;
+                if ( matchPattern.startsWith("/#") ) {
+                    normalized = matchPattern.substring( 2 );   //  correct for top level directory assumption
+                } else if ( matchPattern.startsWith("#") ) {
+                    normalized = matchPattern.substring( 1 );
+                }
+                normalized = `^${normalized.replace("/", "\\/" )}`;
+                try {
+                    AlRoute.reCache[matchPattern] = { matcher: new RegExp( normalized ), text: normalized };
+                } catch( e ) {
+                    console.warn( `Warning: invalid navigation match pattern '${matchPattern}' cannot be compiled as a regular expression; ignoring.` );
+                    AlRoute.reCache[matchPattern] = { matcher: null, text: matchPattern };
+                }
+            } else {
+                try {
+                    const normalized = `^${this.baseHREF}${matchPattern}$`.replace("/", "\\/" );
+                    AlRoute.reCache[matchPattern] = { matcher: new RegExp( normalized ), text: normalized };
+                } catch( e ) {
+                    console.warn( `Warning: invalid navigation match pattern '${matchPattern}' cannot be compiled as a regular expression; ignoring.` );
+                    AlRoute.reCache[matchPattern] = { matcher: null, text: matchPattern };
+                }
+            }
+        }
+        let pattern = AlRoute.reCache[matchPattern];
+        if ( ! pattern.matcher ) {
+            return false;
+        }
+        let result = pattern.matcher.test( this.local ? state.anchorRoute : state.urlNoParams );
+        if ( ! result && AlRoute.debug ) {
+            console.log(`      X - no match for ${this.local ? 'local route' : 'url'} [${pattern.text}]` );
+        }
+        return result;
     }
 
     /**
@@ -840,5 +907,14 @@ export class AlRoute {
             cursor = cursor.parent;
         }
         return activationPath;
+    }
+
+    getLocationTypeID():string {
+        if ( typeof( this.definition.action ) === 'object'
+                && this.definition.action?.type === 'link'
+                && this.definition.action.location ) {
+            return this.definition.action.location;
+        }
+        return "unknown";
     }
 }

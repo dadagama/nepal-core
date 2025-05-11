@@ -1,4 +1,4 @@
-import { vi, expect, describe, test, beforeEach, afterEach } from 'vitest';
+import { vi, it, expect, describe, test, beforeEach, afterEach } from 'vitest';
 import {
     AlLocation,
     AlLocatorService,
@@ -38,7 +38,7 @@ export class MockRoutingHost implements AlRoutingHost {
     getBookmark = (id:string):AlRoute => null;
 }
 
-test( 'AlRoute', () => {
+describe( 'AlRoute', () => {
 
     beforeEach( () => vi.restoreAllMocks() );
     afterEach( () => vi.restoreAllMocks() );
@@ -112,16 +112,18 @@ test( 'AlRoute', () => {
             expect( route.properties ).to.be.an("object");
             expect( route.children ).to.be.an("Array");
             expect( route.children.length ).to.equal( 0 );
-            expect( route.href ).to.equal( "https://console.alertlogic.com/#/some/random/path" );
+            expect( route.href ).to.equal( "#/some/random/path" );                                  //  default href calculation
+            AlRoute.truncateLocalURLs = false;
+            route.refresh( true );
+            expect( route.href ).to.equal( "https://console.alertlogic.com/#/some/random/path" );   //  full href calculation
         } );
         it("should delegate `dispatch` calls to the routing host", () => {
             let route = AlRoute.link( routingHost, AlLocation.MagmaUI, '/#/some/random/path' );
-            let dispatchStub = sinon.stub( routingHost, "dispatch" );
+            let dispatchStub = vi.spyOn( routingHost, "dispatch" );
 
             route.dispatch();
-            expect( dispatchStub.callCount ).to.equal( 1 );
-            expect( dispatchStub.args[0][0] ).to.equal( route );
-            dispatchStub.restore();
+            expect( dispatchStub.mock.calls.length ).to.equal( 1 );
+            expect( dispatchStub.mock.calls[0][0] ).to.equal( route );
         } );
         it("should convert to HREF when `toHref` is called", () => {
             const route = AlRoute.link( routingHost, AlLocation.MagmaUI, '/#/some/random/path' );
@@ -129,9 +131,9 @@ test( 'AlRoute', () => {
             expect( routeHref ).to.equal( "https://console.alertlogic.com/#/some/random/path" );
         } );
         it("should call the host's href decorator if one is provided", () => {
-            ( routingHost as any ).decorateHref = sinon.stub();
+            ( routingHost as any ).decorateHref = vi.fn();
             const route = AlRoute.link( routingHost, AlLocation.MagmaUI, '/#/some/random/path' );
-            expect( ( routingHost as any ).decorateHref.callCount ).to.equal( 1 );
+            expect( ( routingHost as any ).decorateHref.mock.calls.length ).to.equal( 1 );
         } );
         it("should allow remapping and normalize trailing slashes", () => {
             const route = AlRoute.link( routingHost, AlLocation.MagmaUI, '/#/some/random/path' );
@@ -214,13 +216,14 @@ test( 'AlRoute', () => {
             menu.refresh( true );
 
             expect( menu.baseHREF ).to.equal( "https://console.alertlogic.com" );
-            expect( menu.href ).to.equal( "https://console.alertlogic.com/#/path/to/:accountId" );
+            expect( menu.href ).to.equal( undefined );
             expect( menu.visible ).to.equal( false );
+            expect( menu.enabled ).to.equal( false );
         } );
         it( 'should handle invalid locationIds properly with a warning', () => {
-            let warnStub = sinon.stub( console, "warn" );
+            let warnStub = vi.spyOn( console, "warn" );
             const route = AlRoute.link( routingHost, null, "/#/some/silly/path" );
-            expect( warnStub.callCount ).to.equal( 1 );
+            expect( warnStub.mock.calls.length ).to.equal( 1 );
         } );
         it( 'should handle invalid route HREFs properly', () => {
             const menu = new AlRoute( routingHost, {
@@ -233,11 +236,12 @@ test( 'AlRoute', () => {
                 properties: {}
             } );
             expect( menu.baseHREF ).to.equal( "https://console.alertlogic.com" );
-            expect( menu.href ).to.equal( "https://console.alertlogic.com/#/path/:notExistingVariable/something" );
+            expect( menu.href ).to.equal( undefined );
             expect( menu.visible ).to.equal( false );
+            expect( menu.enabled ).to.equal( false );
         } );
         it( 'should handle invalid locations properly', () => {
-            let warnStub = sinon.stub( console, "warn" );
+            let warnStub = vi.spyOn( console, "warn" );
             const menu = new AlRoute( routingHost, {
                 caption: "Test Route",
                 action: {
@@ -250,8 +254,7 @@ test( 'AlRoute', () => {
             expect( menu.baseHREF ).to.equal( undefined );
             expect( menu.href ).to.equal( undefined );
             expect( menu.visible ).to.equal( false );
-            expect( warnStub.callCount ).to.equal( 1 );
-            warnStub.restore();
+            expect( warnStub.mock.calls.length ).to.equal( 1 );
         } );
     } );
 
@@ -432,15 +435,14 @@ test( 'AlRoute', () => {
         } );
 
         it( "should bookmark routes with a bookmarkId property in their definition", () => {
-            let saveStub = sinon.stub( routingHost, "setBookmark" );
+            let saveStub = vi.spyOn( routingHost, "setBookmark" );
             let route = new AlRoute( routingHost, {
                 caption: "Test Route",
                 bookmarkId: "my-bookmark-id"
             } );
-            expect( saveStub.callCount ).to.equal( 1 );
-            expect( saveStub.args[0][0] ).to.equal( "my-bookmark-id" );
-            expect( saveStub.args[0][1] ).to.equal( route );
-            saveStub.restore();
+            expect( saveStub.mock.calls.length ).to.equal( 1 );
+            expect( saveStub.mock.calls[0][0] ).to.equal( "my-bookmark-id" );
+            expect( saveStub.mock.calls[0][1] ).to.equal( route );
         } );
 
         it( "should truncate local links to include only their anchor fragment", () => {
