@@ -26,7 +26,7 @@ stages:
             - |
 
               #code coverage section
-              COVERGAE_JSON_SUMMARY_FILE=coverage/summary/json-summary.json
+              COVERGAE_JSON_SUMMARY_FILE=coverage/coverage-final.json
               echo "### Unit Test Coverage Report\n\n" > comments.txt
               if [ -f $COVERGAE_JSON_SUMMARY_FILE ]; then
                 echo "<dl>" >> comments.txt

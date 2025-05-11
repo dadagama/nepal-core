@@ -8,5 +8,10 @@ export default defineConfig( {
         } )
     ],
     globals: true,
-    environment: 'jsdom'
+    environment: 'jsdom',
+    coverage: {
+        enabled: true,
+        provider: 'v8',
+        reporter: "json-summary"
+    }
 } );
