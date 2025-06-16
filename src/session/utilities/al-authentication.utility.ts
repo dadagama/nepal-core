@@ -1,4 +1,4 @@
-import { AlDefaultClient } from '../../client';
+import { AlDefaultClient, APIRequestParams } from '../../client';
 import { AlSession } from '../al-session';
 import { AlLocatorService, AlLocation } from '../../navigation';
 import { AIMSClient, AIMSSessionDescriptor, FortraSession, AIMSAuthentication } from '../../aims-client/index';
@@ -253,16 +253,25 @@ export class AlAuthenticationUtility {
     }
 
     public async convertFortraToken( fortraSession:FortraSession ):Promise<string> {
-        let converted = await AlDefaultClient.post( {
+        let reqDescr:APIRequestParams = {
             service_stack: AlLocation.GlobalAPI,
             service_name: "aims",
             version: 1,
             path: `/authenticate/convert_token`,
             aimsAuthHeader: false,
-            data: {
+            headers: {}
+        };
+        if ( AlRuntimeConfiguration.options.embeddedFortraApp ) {
+            reqDescr.withCredentials = true;    // let the cookie do its thing
+            if ( AlLocatorService.getCurrentEnvironment() === 'embedded-development' ) {
+                reqDescr.headers['X-Fortra-Environment'] = "dev";
+            }
+        } else {
+            reqDescr.data = {                   //  explicitly provided
                 token: fortraSession.accessToken
             }
-        } ) as AIMSAuthentication;
+        }
+        let converted = await AlDefaultClient.post( reqDescr ) as AIMSAuthentication;
         return converted.token;
     }
 
