@@ -269,7 +269,7 @@ export class AlAuthenticationUtility {
         } else {
             reqDescr.data = {                   //  explicitly provided
                 token: fortraSession.accessToken
-            }
+            };
         }
         let converted = await AlDefaultClient.post( reqDescr ) as AIMSAuthentication;
         return converted.token;

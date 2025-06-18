@@ -315,24 +315,24 @@ describe( 'AlLocatorServiceInstance', () => {
     } );
 
     describe( "with fortra embedded URLs", () => {
-        test("should identify platform-embedded URLs properly", () => {
-            locator.setActingUrl( "https://foundation.foundation-stage.cloudops.fortradev.com/test/#/dashboards?aaid=2&locid=default" );
-
+        test("should identify integration URLs properly", () => {
+            locator.setActingUrl( "https://foundation.foundation-stage.cloudops.fortradev.com/alxdr/#/dashboards?aaid=2&locid=default" );
             let match:AlLocationDescriptor = locator.getActingNode();
             expect( match ).to.be.an( 'object' );
             expect( locator.getCurrentEnvironment() ).to.equal("embedded-integration");
             expect( locator.getCurrentResidency() ).to.equal("US");
-            expect( locator.getCurrentPath() ).to.equal("test");
-
-            locator.setActingUrl( "https://foundation.foundation-dev.cloudops.fortradev.com/some/deep/path/#/dashboards?aaid=2&locid=default" );
-
-            match = locator.getActingNode();
+            expect( locator.getCurrentPath() ).to.equal("alxdr");
+            expect( match.data?.assetBasePath ).to.equal( "https://magma-fortra-alxdr-v3.ui-dev.product.dev.alertlogic.com" );
+        } );
+        test("should identify development URLs properly", () => {
+            locator.setActingUrl( "https://local.foundation.foundation-dev.cloudops.fortradev.com:8888/some/deep/path/#/dashboards?aaid=2&locid=default" );
+            let match = locator.getActingNode();
+            console.log( match );
             expect( match ).to.be.an( 'object' );
             expect( locator.getCurrentEnvironment() ).to.equal("embedded-development");
             expect( locator.getCurrentResidency() ).to.equal("US");
             expect( locator.getCurrentPath() ).to.equal("some/deep/path");
-
-
+            expect( match.data?.assetBasePath ).to.equal( "http://localhost:8916" );
         } );
     } );
 

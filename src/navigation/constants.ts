@@ -122,10 +122,6 @@ export class AlLocation
                 locTypeId: locTypeId,
                 environment: 'development',
                 uri: `http://localhost:${devPort}`,
-                aliases: [
-                    `http://localhost:8916`,
-                    `http://localhost:8917`
-                ],
                 data: {
                     mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbDZwaHZwYmowNDNmM2Ntbjhma3Z1MGtpIn0.PbNCAX6Pt713V_5xp2AuNg'
                 },
@@ -133,20 +129,22 @@ export class AlLocation
             {
                 locTypeId: locTypeId,
                 environment: 'embedded-development',
-                uri: `https://foundation.foundation-dev.cloudops.fortradev.com/*/`,
+                uri: `https://local.foundation.foundation-dev.cloudops.fortradev.com:8888`,
                 aliases: [
-                    `https://local.foundation.foundation-dev.cloudops.fortradev.com:8888/*/`
+                    `https://foundation.foundation-dev.cloudops.fortradev.com`
                 ],
                 data: {
-                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbDZwaHZwYmowNDNmM2Ntbjhma3Z1MGtpIn0.PbNCAX6Pt713V_5xp2AuNg'
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbDZwaHZwYmowNDNmM2Ntbjhma3Z1MGtpIn0.PbNCAX6Pt713V_5xp2AuNg',
+                    assetBasePath: `http://localhost:8916`
                 },
             },
             {
                 locTypeId: locTypeId,
                 environment: 'embedded-integration',
-                uri: `https://foundation.foundation-stage.cloudops.fortradev.com/*/`,
+                uri: `https://foundation.foundation-stage.cloudops.fortradev.com`,
                 data: {
-                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThnMnZmMGUwaW13Mmlwd3I0em5zM3BjIn0.whlbgkSaGpcynFS_gTFbsA'
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThnMnZmMGUwaW13Mmlwd3I0em5zM3BjIn0.whlbgkSaGpcynFS_gTFbsA',
+                    assetBasePath: `https://magma-fortra-alxdr-v3.ui-dev.product.dev.alertlogic.com`
                 },
             }
         ];
