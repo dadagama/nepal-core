@@ -275,9 +275,7 @@ export class AlSessionInstance
 
       this.sessionData.acting             = account;
 
-      const targetLocationId              = account.accessible_locations.indexOf( this.sessionData.boundLocationId ) !== -1
-                                              ? this.sessionData.boundLocationId
-                                              : account.default_location;
+      const targetLocationId              = account.default_location;   /* ENG-58489 - always use account default location */
       this.setActiveDatacenter( targetLocationId );
 
       AlDefaultClient.defaultAccountId    = account.id;
