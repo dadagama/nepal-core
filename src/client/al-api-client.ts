@@ -241,7 +241,8 @@ export class AlApiClient
 
       return response;
     } catch( e ) {
-      this.log(`APIClient::XHR GET [${fullUrl}] (FAILED, ${e["message"]})` );
+      const message = this.normalizeErrorMessage( e );
+      this.log(`APIClient::XHR GET [${fullUrl}] (FAILED, ${message})` );
       throw e;
     } finally {
       delete this.transientReadCache[cacheKey];
@@ -389,7 +390,8 @@ export class AlApiClient
         const duration = completed - start;
         logItem.responseCode = e.status;
         logItem.durationMs = duration;
-        logItem.errorMessage = e["message"];
+        const message = this.normalizeErrorMessage( e );
+        logItem.errorMessage = message;
       }
       this.log(`APIClient::XHR FAILED ${JSON.stringify(logItem)}`);
       throw e;
@@ -638,8 +640,9 @@ export class AlApiClient
     this.storage.synchronize();
   }
 
-  public isResponse( instance:any ):instance is AxiosResponse {
-    if ( instance.hasOwnProperty("status")
+  public isResponse( instance?:any ):instance is AxiosResponse {
+    if ( instance
+            && instance.hasOwnProperty("status")
             && instance.hasOwnProperty('statusText')
             && instance.hasOwnProperty('headers' )
             && instance.hasOwnProperty( 'config' )
@@ -996,7 +999,12 @@ export class AlApiClient
         } );
     }
     if ( this.beforeRequest ) {
-        await this.beforeRequest();
+        try {
+            await this.beforeRequest();
+        } catch( e ) {
+            //  This may be part of keycloak-js's "normal" behavior when token refresh fails?  Don't let it stop the show
+            console.warn(`WARNING: ignoring exception thrown in beforeRequest callback`, e );
+        }
     }
     return ax( config ).then( response => {
                                 if ( attemptIndex > 0 ) {
@@ -1006,7 +1014,8 @@ export class AlApiClient
                               },
                               error => {
                                 if ( this.isRequestTimeout( error, config ) ) {
-                                  return Promise.reject( new AlGatewayTimeoutError( error.message, config.service_name || 'unknown', config ) );
+                                  const message = this.normalizeErrorMessage( error );
+                                  return Promise.reject( new AlGatewayTimeoutError( message, config.service_name || 'unknown', config ) );
                                 } else if ( this.isRetryableError( error, config, attemptIndex ) ) {
                                   attemptIndex++;
                                   const delay = Math.floor( ( config.retry_interval ? config.retry_interval : 1000 ) * attemptIndex );
@@ -1023,7 +1032,8 @@ export class AlApiClient
                               } )
                         .catch( exception => {
                           if ( this.isRequestTimeout( exception, config ) ) {
-                            return Promise.reject( new AlGatewayTimeoutError( exception.message, config.service_name || 'unknown', config ) );
+                            const message = this.normalizeErrorMessage( exception );
+                            return Promise.reject( new AlGatewayTimeoutError( message, config.service_name || 'unknown', config ) );
                           } else if ( this.isRetryableError( null, config, attemptIndex ) ) {
                             attemptIndex++;
                             const delay = Math.floor( ( config.retry_interval ? config.retry_interval : 1000 ) * attemptIndex );
@@ -1135,6 +1145,17 @@ export class AlApiClient
     if ( this.verbose ) {
         console.log.apply( console, (arguments as any) );
     }
+  }
+
+  private normalizeErrorMessage( error:any ):string {
+      if ( typeof( error ) === 'object' && error !== null ) {   // e.g., 'is Error-like`
+        return error.message ?? 'nonstandard error';
+      } else if ( typeof( error ) === 'string' ) {
+          return error;
+      } else {
+          console.warn(`AlApiClient: abnormal error is being ignored.`, error );
+          return "I beg your pardon?";
+      }
   }
 
   /**

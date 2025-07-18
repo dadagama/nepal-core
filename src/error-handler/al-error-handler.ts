@@ -69,8 +69,16 @@ export class AlErrorHandler
      * @returns AlBaseError of the appropriate flavor.
      */
     public static normalize( error:AxiosResponse|AlBaseError|Error|string|any, commentary?:string ):AlBaseError {
-        if ( error instanceof AlBaseError ) {
+        if ( error === undefined || error === null ) {
+            return new AlBaseError( `An undefined or null value was thrown as an error` );
+        } else if ( error instanceof AlBaseError ) {
             return error;
+        } else if ( error instanceof Error ) {
+            let message = error.message ?? "Unspecified error";
+            if ( commentary ) {
+                message = `${commentary}: ${message}`;
+            }
+            return new AlBaseError( message, error );
         } else if ( AlDefaultClient.isResponse( error ) ) {
             let config = error.config as APIRequestParams;
             let serviceName = `service_name` in config ? config.service_name : config.url;
@@ -80,12 +88,6 @@ export class AlErrorHandler
                 errorText = `${commentary}: ${errorText}`;
             }
             return new AlAPIServerError( errorText, serviceName, statusCode, error );
-        } else if ( error instanceof Error ) {
-            let message = error.message;
-            if ( commentary ) {
-                message = `${commentary}: ${error.message}`;
-            }
-            return new AlBaseError( message, error );
         } else if ( typeof( error ) === 'string' ) {
             if ( commentary ) {
                 error = `${commentary}: ${error}`;
