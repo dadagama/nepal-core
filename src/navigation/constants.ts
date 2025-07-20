@@ -129,13 +129,13 @@ export class AlLocation
             {
                 locTypeId: locTypeId,
                 environment: 'embedded-development',
-                uri: `https://local.foundation.foundation-dev.cloudops.fortradev.com:8888`,
+                uri: `https://foundation.foundation-dev.cloudops.fortradev.com`,
                 aliases: [
-                    `https://foundation.foundation-dev.cloudops.fortradev.com`
+                    `https://local.foundation.foundation-dev.cloudops.fortradev.com:8888`
                 ],
                 data: {
                     mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbDZwaHZwYmowNDNmM2Ntbjhma3Z1MGtpIn0.PbNCAX6Pt713V_5xp2AuNg',
-                    assetBasePath: `http://localhost:8916`
+                    assetBasePath: `https://magma-fortra-alxdr-v3.ui-dev.product.dev.alertlogic.com`
                 },
             },
             {

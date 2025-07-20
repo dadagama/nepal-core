@@ -332,7 +332,7 @@ describe( 'AlLocatorServiceInstance', () => {
             expect( locator.getCurrentEnvironment() ).to.equal("embedded-development");
             expect( locator.getCurrentResidency() ).to.equal("US");
             expect( locator.getCurrentPath() ).to.equal("some/deep/path");
-            expect( match.data?.assetBasePath ).to.equal( "http://localhost:8916" );
+            expect( match.data?.assetBasePath ).to.equal( "https://magma-fortra-alxdr-v3.ui-dev.product.dev.alertlogic.com" );
         } );
     } );
 
