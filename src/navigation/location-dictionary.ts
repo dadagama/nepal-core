@@ -68,7 +68,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.GlobalAPI,
         insightLocationId: 'insight-global',
         uri: 'https://api.global.xdr.foundation-dev.cloudops.fortradev.com',
-        environment: 'embedded-development|embedded-integration',
+        environment: 'embedded-development',
         external: true
     },
 
@@ -655,7 +655,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.FortraPlatform,
         uri: 'https://foundation.foundation-dev.cloudops.fortradev.com',
-        environment: 'embedded-development',
+        environment: 'development|embedded-development',
         external: true,
         aliases: [
             'https://local.foundation.foundation-dev.cloudops.fortradev.com'
@@ -664,7 +664,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.FortraPlatform,
         uri: 'https://foundation.foundation-stage.cloudops.fortradev.com',
-        environment: 'development|integration|embedded-integration',
+        environment: 'integration|embedded-integration',
         external: true
     },
     {
