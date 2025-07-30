@@ -55,6 +55,9 @@ export interface AlAuthenticationState {
 
 export class AlAuthenticationUtility {
 
+    protected static convertedSession?:AIMSAuthentication;
+    protected static conversionReq?:Promise<AIMSAuthentication>;
+
     public state:AlAuthenticationState = {
         result: AlAuthenticationResult.Unauthenticated
     };
@@ -252,27 +255,40 @@ export class AlAuthenticationUtility {
         return outcome;
     }
 
-    public async convertFortraToken( fortraSession:FortraSession ):Promise<string> {
-        let reqDescr:APIRequestParams = {
-            service_stack: AlLocation.GlobalAPI,
-            service_name: "aims",
-            version: 1,
-            path: `/authenticate/convert_token`,
-            aimsAuthHeader: false,
-            headers: {}
-        };
-        if ( AlRuntimeConfiguration.options.embeddedFortraApp ) {
-            reqDescr.withCredentials = true;    // let the cookie do its thing
-            if ( AlLocatorService.getCurrentEnvironment() === 'embedded-development' ) {
-                reqDescr.headers['X-Fortra-Environment'] = "dev";
-            }
+    public async convertFortraSession( fortraSession:FortraSession ):Promise<AIMSAuthentication> {
+        if ( AlAuthenticationUtility.convertedSession ) {
+            return AlAuthenticationUtility.convertedSession;
+        } else if ( AlAuthenticationUtility.conversionReq ) {
+            return AlAuthenticationUtility.conversionReq;
         } else {
-            reqDescr.data = {                   //  explicitly provided
-                token: fortraSession.accessToken
+            let reqDescr:APIRequestParams = {
+                service_stack: AlLocation.GlobalAPI,
+                service_name: "aims",
+                version: 1,
+                path: `/authenticate/convert_token`,
+                aimsAuthHeader: false,
+                headers: {}
             };
+            if ( AlRuntimeConfiguration.options.embeddedFortraApp ) {
+                reqDescr.withCredentials = true;    // let the cookie do its thing
+                if ( AlLocatorService.getCurrentEnvironment() === 'embedded-development' ) {
+                    reqDescr.headers['X-Fortra-Environment'] = "dev";
+                }
+            } else {
+                reqDescr.data = {                   //  explicitly provided
+                    token: fortraSession.accessToken
+                };
+            }
+            AlAuthenticationUtility.conversionReq = AlDefaultClient.post<AIMSAuthentication>( reqDescr );
+            AlAuthenticationUtility.convertedSession = await AlAuthenticationUtility.conversionReq;
+            AlAuthenticationUtility.conversionReq = undefined;
         }
-        let converted = await AlDefaultClient.post( reqDescr ) as AIMSAuthentication;
-        return converted.token;
+        return AlAuthenticationUtility.convertedSession;
+    }
+
+    public async convertFortraToken( fortraSession:FortraSession, forceNew?:boolean ):Promise<string> {
+        let session = await this.convertFortraSession( fortraSession );
+        return session.token;
     }
 
     protected async authenticateViaGestaltFromFortra( fortraSession:FortraSession ):Promise<AIMSSessionDescriptor> {
