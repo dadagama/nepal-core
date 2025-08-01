@@ -53,8 +53,9 @@ export class AlLocation
     public static IntegrationsUI    = "cd17:integrations";      //  deprecated
     public static EndpointsUI       = "cd19:endpoints";
     public static InsightBI         = "insight:bi";
-    public static HudUI             = "insight:hud";
-    public static IrisUI            = "insight:iris";
+    public static HudUI             = "insight:hud"; // deprecated by SOC UI
+    public static IrisUI            = "insight:iris"; // deprecated by SOC UI
+    public static SOCUI             = "cd21:soc";
     public static SearchUI          = "cd17:search";            //  almost deprecated
     public static HealthUI          = "cd17:health";            //  deprecated
     public static DisputesUI        = "cd17:disputes";          //  deprecated
@@ -79,6 +80,28 @@ export class AlLocation
     public static Auth0             = "auth0";
     public static GoogleTagManager  = "gtm";
     public static DatadogRum        = "datadogrum";
+
+    public static socNode( locTypeId:string, appCode:string, devPort:number ):AlLocationDescriptor[] {
+        return [
+            {
+                locTypeId: locTypeId,
+                environment: 'production',
+                residency: 'US',
+                uri: `https://console.${appCode}.alertlogic.com`,
+            },
+            {
+                locTypeId: locTypeId,
+                environment: 'integration',
+                uri: `https://console.${appCode}.product.dev.alertlogic.com`,
+                aliases: [`https://${appCode}.dev.product.dev.alertlogic.com`],
+            },
+            {
+                locTypeId: locTypeId,
+                environment: 'development',
+                uri: `http://localhost:${devPort}/#/${appCode}`,
+            }
+        ];
+    }
 
 
     /**
