@@ -10,8 +10,7 @@ import { AlLocation } from './constants';
 export const AlLocationDictionary: AlLocationDescriptor[] =
 [
     ...AlLocation.magmaNode(AlLocation.MagmaUI, 'magma', 8888 ),
-    ...AlLocation.socNode(AlLocation.SOCUI, 'iris', 4202),
-    ...AlLocation.socNode(AlLocation.SOCUI, 'hud', 4202),
+    ...AlLocation.socNode(AlLocation.SOCUI, 4202),
     ...AlLocation.o3Node(AlLocation.AccountsUI, 'account', 8002),
     ...AlLocation.o3Node(AlLocation.OverviewUI, 'overview', 4213),
     ...AlLocation.o3Node(AlLocation.IncidentsUI, 'incidents', 8001),

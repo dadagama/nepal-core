@@ -53,9 +53,9 @@ export class AlLocation
     public static IntegrationsUI    = "cd17:integrations";      //  deprecated
     public static EndpointsUI       = "cd19:endpoints";
     public static InsightBI         = "insight:bi";
-    public static HudUI             = "insight:hud"; // deprecated by SOC UI
-    public static IrisUI            = "insight:iris"; // deprecated by SOC UI
-    public static SOCUI             = "cd21:soc";
+    public static HudUI             = "insight:hud";            //  deprecated by SOC UI
+    public static IrisUI            = "insight:iris";           //  deprecated by SOC UI
+    public static SOCUI             = "cd25:soc";               //  such sparkles
     public static SearchUI          = "cd17:search";            //  almost deprecated
     public static HealthUI          = "cd17:health";            //  deprecated
     public static DisputesUI        = "cd17:disputes";          //  deprecated
@@ -81,24 +81,23 @@ export class AlLocation
     public static GoogleTagManager  = "gtm";
     public static DatadogRum        = "datadogrum";
 
-    public static socNode( locTypeId:string, appCode:string, devPort:number ):AlLocationDescriptor[] {
+    public static socNode( locTypeId:string, devPort:number ):AlLocationDescriptor[] {
         return [
             {
                 locTypeId: locTypeId,
                 environment: 'production',
                 residency: 'US',
-                uri: `https://console.${appCode}.alertlogic.com`,
+                uri: `https://master.soc-ui.product.dev.alertlogic.com`,
             },
             {
                 locTypeId: locTypeId,
                 environment: 'integration',
-                uri: `https://console.${appCode}.product.dev.alertlogic.com`,
-                aliases: [`https://${appCode}.dev.product.dev.alertlogic.com`],
+                uri: `https://integration.soc-ui.product.dev.alertlogic.com`
             },
             {
                 locTypeId: locTypeId,
                 environment: 'development',
-                uri: `http://localhost:${devPort}/#/${appCode}`,
+                uri: `http://localhost:${devPort}`,
             }
         ];
     }
@@ -135,7 +134,8 @@ export class AlLocation
                 aliases: [
                     `https://${appCode}.ui-dev.product.dev.alertlogic.com`,
                     `https://${appCode}-*.ui-dev.product.dev.alertlogic.com`,
-                    `https://${appCode}-pr-*.ui-dev.product.dev.alertlogic.com`
+                    `https://${appCode}-pr-*.ui-dev.product.dev.alertlogic.com`,
+                    `https://*.xdr-ui.product.dev.alertlogic.com`
                 ],
                 data: {
                     mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThnMnZmMGUwaW13Mmlwd3I0em5zM3BjIn0.whlbgkSaGpcynFS_gTFbsA'
