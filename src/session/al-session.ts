@@ -685,13 +685,10 @@ export class AlSessionInstance
 
     protected async restoreSession( session:AIMSSessionDescriptor ) {
       try {
-          this.startDetection();
           await this.setAuthentication(session);
       } catch( e ) {
           this.deactivateSession();
           console.warn(`Failed to reinstate session from localStorage: ${e.message}`, e );
-      } finally {
-          this.endDetection();
       }
     }
 
@@ -751,6 +748,7 @@ export class AlSessionInstance
      */
     protected async resolveActingAccount( account:AIMSAccount ) {
       let primaryEntitlementsLookup = SubscriptionsClient.getEntitlements( this.getPrimaryAccountId() );
+
       let dataSources = [
           AIMSClient.getAccountDetails( account.id ),
           AIMSClient.getLicenseAcceptanceStatus( account.id ),
@@ -759,6 +757,11 @@ export class AlSessionInstance
       ];
 
       let [ accountReq, licenseStatusReq, primaryEntitlementsReq, actingEntitlementsReq ] = await Promise.allSettled( dataSources );
+
+      if ( accountReq.status === 'rejected' && licenseStatusReq.status === 'rejected'
+            && primaryEntitlementsReq.status === 'rejected' && actingEntitlementsReq.status === 'rejected' ) {
+        throw new Error( `AlSession could not resolve existing session` );
+      }
 
       try {
         let coreServiceError                                =   null;
