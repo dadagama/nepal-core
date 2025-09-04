@@ -36,7 +36,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.StaticContentUI,
         uri: 'https://console.alertlogic.com',
-        environment: 'production|production-staging',
+        environment: 'production|production-staging|embedded-production',
         external: true
     },
 
@@ -56,6 +56,13 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         uri: 'https://api.global-integration.product.dev.alertlogic.com',
 //        environment: 'integration|development|embedded-development|embedded-integration',
         environment: 'integration|development',
+        external: true
+    },
+    {
+        locTypeId: AlLocation.GlobalAPI,
+        insightLocationId: 'insight-global',
+        uri: 'https://api.global.xdr.platform.fortra.com',
+        environment: 'embedded-production',
         external: true
     },
     {
@@ -97,6 +104,18 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     },
     {
         locTypeId: AlLocation.InsightAPI,
+        uri: 'https://api.us.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: 'US',
+    },
+    {
+        locTypeId: AlLocation.InsightAPI,
+        uri: 'https://api.eu.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: 'EMEA',
+    },
+    {
+        locTypeId: AlLocation.InsightAPI,
         uri: 'https://api.xdr.foundation-stage.cloudops.fortradev.com',
         environment: 'embedded-integration',
         residency: 'US',
@@ -125,7 +144,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.GestaltAPI,
         uri: 'https://gestalt.cloudinsight.alertlogic.com',
-        environment: 'production|production-staging',
+        environment: 'production|production-staging|embedded-production',
         residency: 'US'
     },
 
@@ -160,8 +179,30 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.LegacyUI,
         insightLocationId: 'defender-us-ashburn',
         uri: 'https://cd-integration-console.alertlogic.net',
-        environment: 'integration|development|embedded-integration|embedded-development',
+        environment: 'integration|development',
         residency: 'US',
+    },
+
+    {
+        locTypeId: AlLocation.LegacyUI,
+        insightLocationId: 'defender-us-denver',
+        uri: 'https://defender.us-west-2.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: 'US',
+    },
+    {
+        locTypeId: AlLocation.LegacyUI,
+        insightLocationId: 'defender-us-ashburn',
+        uri: 'https://defender.us-east-1.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: 'US',
+    },
+    {
+        locTypeId: AlLocation.LegacyUI,
+        insightLocationId: 'defender-uk-newport',
+        uri: 'https://defender.eu-west-1.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: 'EMEA',
     },
 
     {
@@ -187,13 +228,13 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.InsightBI,
         uri: 'https://bi.cloudinsight.alertlogic.com',
-        environment: 'production|production-staging',
+        environment: 'production|production-staging|embedded-production',
         residency: 'US'
     },
     {
         locTypeId: AlLocation.InsightBI,
         uri: 'https://bi.cloudinsight.alertlogic.co.uk',
-        environment: 'production|production-staging',
+        environment: 'production|production-staging|embedded-production',
         residency: 'EMEA'
     },
     {
@@ -280,13 +321,13 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.EndpointsAPI,
         uri: 'https://api.endpoints.alertlogic.com',
-        environment: 'production|production-staging',
+        environment: 'production|production-staging|embedded-production',
         residency: 'US'
     },
     {
         locTypeId: AlLocation.EndpointsAPI,
         uri: 'https://api.endpoints.alertlogic.co.uk',
-        environment: 'production|production-staging',
+        environment: 'production|production-staging|embedded-production',
         residency: 'EMEA'
     },
     {
@@ -322,75 +363,6 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.SupportPortal,
         uri: 'https://support.alertlogic.com'
-    },
-
-    /**
-    *  Segment Configuration
-    */
-    {
-        locTypeId: AlLocation.Segment,
-        uri: 'https://segment.io',
-        data: {
-            analyticsKey: 'Ud9VX1aFxXgjg8CnlOBv9k5b6qga9yII'
-        },
-        environment: 'production|production-staging',
-        residency: 'US'
-    },
-    {
-        locTypeId: AlLocation.Segment,
-        uri: 'https://segment.io',
-        data: {
-            analyticsKey: 'IwB7SmcEFckM6FrHlbQYcg0I75lc93dO'
-        },
-        environment: 'production',
-        residency: 'EMEA'
-    },
-    {
-        locTypeId: AlLocation.Segment,
-        uri: 'https://segment.io',
-        data: {
-            analyticsKey: 'OXe8LjJ0C48IJASuW9Ho37f4o6XCXHIV'
-        },
-        environment: 'integration'
-    },
-    {
-        locTypeId: AlLocation.Segment,
-        uri: 'https://dev.segment.io',
-        data: {
-            analyticsKey: 'b1ptaDZMJSUaFmm38ho7p4NH5uHwqheY'
-        },
-        environment: 'development'
-    },
-
-    /**
-    *  Google Tag Manager Config
-    */
-    {
-        locTypeId: AlLocation.GoogleTagManager,
-        uri: 'https://www.googletagmanager.com/gtag/js',
-        data: {
-            analyticsKey: 'UA-17359898-12',
-            containerId: ''
-        },
-        environment: 'production|production-staging'
-    },
-    {
-        locTypeId: AlLocation.GoogleTagManager,
-        uri: 'https://www.googletagmanager.com/gtag/js',
-        data: {
-            analyticsKey: 'UA-17359898-11',
-            containerId: 'GTM-KJZM6BQ'
-        },
-        environment: 'integration'
-    },
-    {
-        locTypeId: AlLocation.GoogleTagManager,
-        uri: 'https://www.googletagmanager.com/gtag/js',
-        data: {
-            analyticsKey: '',
-            containerId: ''
-        },
-        environment: 'development'
     },
 
     /**
@@ -471,7 +443,12 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.MDRAPI,
         uri: 'https://{service}.mdr.product.dev.alertlogic.com',
-        environment: 'integration|development|embedded-development|embedded-integration'
+        environment: 'integration|development'
+    },
+    {
+        locTypeId: AlLocation.MDRAPI,
+        uri: 'https://{service}.mdr.api.global.xdr.fortra.com',
+        environment: 'embedded-production'
     },
     {
         locTypeId: AlLocation.MDRAPI,
@@ -499,6 +476,11 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     },
     {
         locTypeId: AlLocation.AETunerAPI,
+        uri: 'https://aetuner.xdr.fortra.com',
+        environment: 'embedded-production'
+    },
+    {
+        locTypeId: AlLocation.AETunerAPI,
         uri: 'https://aetuner.xdr.foundation-stage.cloudops.fortradev.com',
         environment: 'embedded-integration'
     },
@@ -519,7 +501,12 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.IntegrationsAPI,
         uri: 'https://connectors.mdr.product.dev.alertlogic.com',
-        environment: 'integration|development|embedded-development|embedded-integration'
+        environment: 'integration|development'
+    },
+    {
+        locTypeId: AlLocation.IntegrationsAPI,
+        uri: 'https://connectors.xdr.fortra.com',
+        environment: 'embedded-production'
     },
     {
         locTypeId: AlLocation.IntegrationsAPI,
@@ -543,7 +530,19 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.ResponderAPI,
         uri: 'https://responder.mdr.product.dev.alertlogic.com',
-        environment: 'integration|development|embedded-development|embedded-integration'
+        environment: 'integration|development'
+    },
+    {
+        locTypeId: AlLocation.ResponderAPI,
+        uri: 'https://api.responder.us.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: "US"
+    },
+    {
+        locTypeId: AlLocation.ResponderAPI,
+        uri: 'https://api.responder.eu.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: "EMEA"
     },
     {
         locTypeId: AlLocation.ResponderAPI,
@@ -556,6 +555,8 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         environment: 'embedded-development'
     },
 
+    /* Responder Websockets Implementation */
+
     {
         locTypeId: AlLocation.ResponderWS,
         uri: 'wss://responder-async.mdr.global.alertlogic.com',
@@ -565,6 +566,18 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.ResponderWS,
         uri: 'wss://responder-async.mdr.product.dev.alertlogic.com',
         environment: 'integration|development'
+    },
+    {
+        locTypeId: AlLocation.ResponderWS,
+        uri: 'wss://async.responder.us.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: "US"
+    },
+    {
+        locTypeId: AlLocation.ResponderWS,
+        uri: 'wss://async.responder.eu.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        residency: "EMEA"
     },
     {
         locTypeId: AlLocation.ResponderWS,
@@ -589,6 +602,11 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.DistributorAPI,
         uri: 'https://distributor.mdr.product.dev.alertlogic.com',
         environment: 'integration|development'
+    },
+    {
+        locTypeId: AlLocation.DistributorAPI,
+        uri: 'https://distributor.xdr.platform.fortra.com',
+        environment: 'embedded-production'
     },
     {
         locTypeId: AlLocation.DistributorAPI,
@@ -631,8 +649,32 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.YARDAPI,
         uri: 'https://yard.dsaops.alertlogic.net',
-        environment: 'integration|development|embedded-development|embedded-integration',
+        environment: 'integration|development',
         residency: "US",
+        external: true
+    },
+    {
+        locTypeId: AlLocation.YARDAPI,
+        uri: 'https://yard.us-west-2.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        insightLocationId: "defender-us-denver",
+        residency: "US",
+        external: true
+    },
+    {
+        locTypeId: AlLocation.YARDAPI,
+        uri: 'https://yard.us-east-1.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        insightLocationId: "defender-us-ashburn",
+        residency: "US",
+        external: true
+    },
+    {
+        locTypeId: AlLocation.YARDAPI,
+        uri: 'https://yard.eu-west-1.xdr.platform.fortra.com',
+        environment: 'embedded-production',
+        insightLocationId: "defender-uk-newport",
+        residency: "EMEA",
         external: true
     },
     {
@@ -656,8 +698,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.FortraPlatform,
         uri: 'https://foundation.foundation-dev.cloudops.fortradev.com',
-        environment: 'development|embedded-development',
-        external: true,
+        environment: 'embedded-development',
         aliases: [
             'https://local.foundation.foundation-dev.cloudops.fortradev.com'
         ],
@@ -665,14 +706,12 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     {
         locTypeId: AlLocation.FortraPlatform,
         uri: 'https://foundation.foundation-stage.cloudops.fortradev.com',
-        environment: 'integration|embedded-integration',
-        external: true
+        environment: 'integration|embedded-integration|development',
     },
     {
         locTypeId: AlLocation.FortraPlatform,
         uri: 'https://platform.fortra.com',
-        environment: 'production-staging|production',
-        external: true
+        environment: 'embedded-production|production|production-staging',
     },
 
     /**
