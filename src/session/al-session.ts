@@ -80,7 +80,22 @@ export class AlSessionInstance
     protected resolutionGuard                     =   new AlBehaviorPromise<boolean>();         //  This functions as a mutex so that access to resolvedAccount is only available at appropriate times.
     protected detectionGuard                      =   new AlBehaviorPromise<boolean>();         //  resolved after first session detection cycle with no outstanding session detection or account resolution processes in flight.
     protected activeDetectionCycles               =   0;
-    protected storage                             =   AlCabinet.persistent( "al_session" );
+    protected _storage?:AlCabinet;
+
+    protected get storage() {
+        const targetStorageType = this.sessionData?.fortraSession?.inPlatform
+                                    ? AlCabinet.EPHEMERAL       //  in-memory storage only
+                                    : AlCabinet.PERSISTENT;     //  local storage
+        if ( this._storage && this._storage.type !== targetStorageType ) {
+            this._storage.destroy();
+            delete this._storage;
+        }
+
+        if ( ! this._storage ) {
+            this._storage = new AlCabinet( "al_session", {}, targetStorageType );
+        }
+        return this._storage;
+    }
 
     /**
      * List of base locations ("service_stack") that should automatically have X-AIMS-Auth-Token headers added.
@@ -121,9 +136,10 @@ export class AlSessionInstance
        */
       const persistedSession = this.storage.get("session") as AIMSSessionDescriptor;
       if ( ( persistedSession?.authentication?.token_expiration ?? 0 ) >= this.getCurrentTimestamp()
-                &&
-            persistedSession?.authentication?.account?.id ) {
-        this.restoreSession( persistedSession );
+                && persistedSession?.authentication?.account?.id ) {
+        if ( ! persistedSession?.fortraSession.inPlatform ) {
+            this.restoreSession( persistedSession );
+        }
       } else {
         this.storage.destroy();
       }
@@ -237,6 +253,7 @@ export class AlSessionInstance
         let result:AlActingAccountResolvedEvent = proposal.acting
                                                   ? await this.setActingAccount( proposal.acting )
                                                   : await this.setActingAccount( proposal.authentication.account );
+
 
         this.storage.set("session", this.sessionData );
         return result;

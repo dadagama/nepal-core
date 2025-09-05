@@ -401,7 +401,10 @@ export class AIMSClientInstance {
       ttl: 10 * 60 * 1000,
       cacheKey: AlLocatorService.resolveURL( AlLocation.GlobalAPI, `/aims/v1/token_info/${accessToken}` )       //  custom cacheKey to avoid cache pollution
     };
-    if ( ! AlRuntimeConfiguration.options.embeddedFortraApp ) {
+    if ( AlRuntimeConfiguration.options.embeddedFortraApp ) {
+        /* This allows the fortra-platform-at and other cookies to be used in the request */
+        request.withCredentials = true;
+    } else {
         if ( useAuthenticationHeader ) {
           request.headers['Authorization'] = `Bearer ${accessToken}`;
           if ( AlLocatorService.getCurrentEnvironment() === 'embedded-development' ) {

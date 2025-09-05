@@ -169,6 +169,15 @@ export class AlLocation
                     mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThnMnZmMGUwaW13Mmlwd3I0em5zM3BjIn0.whlbgkSaGpcynFS_gTFbsA',
                     assetBasePath: `https://magma-fortra-alxdr-v3.ui-dev.product.dev.alertlogic.com`
                 },
+            },
+            {
+                locTypeId: locTypeId,
+                environment: 'embedded-production',
+                uri: `https://platform.fortra.com`,
+                data: {
+                    mapboxToken: 'pk.eyJ1IjoidWktdGVhbSIsImEiOiJjbThnMnZmMGUwaW13Mmlwd3I0em5zM3BjIn0.whlbgkSaGpcynFS_gTFbsA',
+                    assetBasePath: `https://master.xdr-plugin.product.dev.alertlogic.com`
+                },
             }
         ];
     }

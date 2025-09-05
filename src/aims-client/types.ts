@@ -48,6 +48,7 @@ export interface FortraSession {
     identityToken:string;
     accessToken:string;
     refreshToken?:string;
+    inPlatform?:boolean;
 }
 
 export interface AIMSSessionDescriptor {
@@ -55,7 +56,7 @@ export interface AIMSSessionDescriptor {
     acting?: AIMSAccount;
     boundLocationId?: string;
     profileId?:string;
-    fortraSession?:FortraSession; /* for AIMS sessions created from fortra SSO sessions */
+    fortraSession?:FortraSession;
 }
 
 export interface AIMSAuthenticationTokenInfo extends AIMSAuthentication {

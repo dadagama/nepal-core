@@ -447,7 +447,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     },
     {
         locTypeId: AlLocation.MDRAPI,
-        uri: 'https://{service}.mdr.api.global.xdr.fortra.com',
+        uri: 'https://{service}.mdr.api.global.xdr.platform.fortra.com',
         environment: 'embedded-production'
     },
     {
@@ -476,7 +476,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     },
     {
         locTypeId: AlLocation.AETunerAPI,
-        uri: 'https://aetuner.xdr.fortra.com',
+        uri: 'https://aetuner.xdr.platform.fortra.com',
         environment: 'embedded-production'
     },
     {
@@ -505,7 +505,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
     },
     {
         locTypeId: AlLocation.IntegrationsAPI,
-        uri: 'https://connectors.xdr.fortra.com',
+        uri: 'https://connectors.xdr.platform.fortra.com',
         environment: 'embedded-production'
     },
     {
@@ -699,6 +699,7 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.FortraPlatform,
         uri: 'https://foundation.foundation-dev.cloudops.fortradev.com',
         environment: 'embedded-development',
+        external: true,
         aliases: [
             'https://local.foundation.foundation-dev.cloudops.fortradev.com'
         ],
@@ -707,11 +708,13 @@ export const AlLocationDictionary: AlLocationDescriptor[] =
         locTypeId: AlLocation.FortraPlatform,
         uri: 'https://foundation.foundation-stage.cloudops.fortradev.com',
         environment: 'integration|embedded-integration|development',
+        external: true,
     },
     {
         locTypeId: AlLocation.FortraPlatform,
         uri: 'https://platform.fortra.com',
         environment: 'embedded-production|production|production-staging',
+        external: true,
     },
 
     /**

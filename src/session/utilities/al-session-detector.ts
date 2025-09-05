@@ -50,7 +50,7 @@ export class AlSessionDetector
     public authenticated:boolean = false;
 
     constructor( public conduit:AlConduitClient,
-                 public useAuth0:boolean = true ) {
+                 public useAuth0?:boolean ) {
         if ( ! AlSessionDetector.listening ) {
             AlSessionDetector.listening = true;
             AlSession.notifyStream.attach( AlActingAccountResolvedEvent, ( event:AlActingAccountResolvedEvent ) => {
