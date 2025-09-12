@@ -20,6 +20,7 @@ import {
     AlApiClient,
     AlClientBeforeRequestEvent,
     AlDefaultClient,
+    APIRequestParams,
 } from "../client";
 import { AlErrorHandler } from '../error-handler';
 import {
@@ -124,7 +125,6 @@ export class AlSessionInstance
        * Failure to comply may result in surprise tickling or water balloon accidents.
        */
     ];
-
 
     constructor( client:AlApiClient = null ) {
       this.client = client || AlDefaultClient;
@@ -282,8 +282,17 @@ export class AlSessionInstance
         throw new Error("Usage error: setActingAccount requires an account ID or account descriptor." );
       }
       if ( typeof( account ) === 'string' ) {
-        const accountDetails = await AIMSClient.getAccountDetails( account );
-        return await this.setActingAccount( accountDetails );
+        const accountDetailReq:APIRequestParams = {
+          service_stack: AlLocation.GlobalAPI,
+          service_name: 'aims',
+          version: 'v1',
+          account_id: account,
+          path: '/account'
+        };
+        if ( AlRuntimeConfiguration.options.embeddedFortraApp ) {
+            accountDetailReq.withCredentials = true;
+        }
+        account = await AlDefaultClient.get<AIMSAccount>( accountDetailReq );
       }
 
       const previousAccount               = this.sessionData.acting;
@@ -727,6 +736,13 @@ export class AlSessionInstance
     protected onBeforeRequest = ( event:AlClientBeforeRequestEvent ) => {
       /*  tslint:disable:no-boolean-literal-compare */
       const environment = AlLocatorService.getCurrentEnvironment();
+      if ( AlRuntimeConfiguration.options.embeddedFortraApp ) {
+        if ( event.request.url && event.request.url.includes("platform.fortra") ) {
+          event.request.withCredentials = true;
+          return;
+        }
+      }
+
       if ( this.sessionIsActive ) {
         if ( event.request.aimsAuthHeader === true
                 ||
