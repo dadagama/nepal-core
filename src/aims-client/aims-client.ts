@@ -401,15 +401,16 @@ export class AIMSClientInstance {
       ttl: 10 * 60 * 1000,
       cacheKey: AlLocatorService.resolveURL( AlLocation.GlobalAPI, `/aims/v1/token_info/${accessToken}` )       //  custom cacheKey to avoid cache pollution
     };
+
+    if ( AlLocatorService.getCurrentEnvironment() === 'embedded-development' ) {
+      request.headers['X-Fortra-Environment'] = "dev";  // This allows integration AIMS to service both development and integration environments
+    }
     if ( AlRuntimeConfiguration.options.embeddedFortraApp ) {
         /* This allows the fortra-platform-at and other cookies to be used in the request */
         request.withCredentials = true;
     } else {
         if ( useAuthenticationHeader ) {
           request.headers['Authorization'] = `Bearer ${accessToken}`;
-          if ( AlLocatorService.getCurrentEnvironment() === 'embedded-development' ) {
-            request.headers['X-Fortra-Environment'] = "dev";
-          }
         } else {
           request.headers['X-AIMS-Auth-Token'] = accessToken;
         }

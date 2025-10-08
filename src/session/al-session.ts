@@ -81,6 +81,8 @@ export class AlSessionInstance
     protected resolutionGuard                     =   new AlBehaviorPromise<boolean>();         //  This functions as a mutex so that access to resolvedAccount is only available at appropriate times.
     protected detectionGuard                      =   new AlBehaviorPromise<boolean>();         //  resolved after first session detection cycle with no outstanding session detection or account resolution processes in flight.
     protected activeDetectionCycles               =   0;
+
+  /*  tslint:disable:variable-name */
     protected _storage?:AlCabinet;
 
     protected get storage() {
