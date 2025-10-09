@@ -93,6 +93,13 @@ stages:
 
               PKGNAME=$(node -e 'console.log(require("./package.json").name)')
               PKGVERSION=$(node -e 'console.log(require("./package.json").version)')
+              PKGTAG=$(node -e 'console.log(require("./package.json").tag)')
+
+              if [ "$PKGTAG" -eq "" ]; then
+                  PKGTAG="latest"
+                  echo "No tag specified in package.json, defaulting to 'latest'"
+              fi
+
               V_VERSION=v$PKGVERSION
               WORDCOUNT=$(npm view "${PKGNAME}@${PKGVERSION}" | wc -c)
 
@@ -108,7 +115,7 @@ stages:
                  echo "PUBLISHING $PKGNAME $PKGVERSION"
                  npm run build
                 # git push origin $V_VERSION
-                 npm publish --access public
+                 npm publish --access public --tag "${PKGTAG}"
 
                  echo "Continuous Delivery release for ${PKGNAME}@${PKGVERSION}" > release_notes.txt
 
@@ -119,6 +126,6 @@ stages:
                  # End release section
 
               else
-                 echo "NOT PUBLISHING $PKGNAME $PKGVERSION"
+                 echo "NOT PUBLISHING $PKGNAME $PKGVERSION (already published)"
               fi
             - echo done
