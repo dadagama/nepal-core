@@ -93,12 +93,7 @@ stages:
 
               PKGNAME=$(node -e 'console.log(require("./package.json").name)')
               PKGVERSION=$(node -e 'console.log(require("./package.json").version)')
-              PKGTAG=$(node -e 'console.log(require("./package.json").tag)')
-
-              if [ "$PKGTAG" -eq "" ]; then
-                  PKGTAG="latest"
-                  echo "No tag specified in package.json, defaulting to 'latest'"
-              fi
+              PKGTAG=$(node -e 'console.log(require("./package.json").tag ?? "latest")')
 
               V_VERSION=v$PKGVERSION
               WORDCOUNT=$(npm view "${PKGNAME}@${PKGVERSION}" | wc -c)
